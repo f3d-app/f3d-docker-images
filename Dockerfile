@@ -4,6 +4,7 @@ FROM ubuntu:18.04
 RUN apt update && apt install -y \
     apt-transport-https \
     build-essential \
+    cargo \
     ca-certificates \
     clang-10 \
     curl \
@@ -23,10 +24,12 @@ RUN apt update && apt install -y \
     libjson-perl \
     libperlio-gzip-perl \
     libqt5opengl5-dev \
+    libssl-dev \
     libx11-dev \
     libxcursor1 \
     libxt-dev \
     openssh-client \
+    pkg-config \
     python3-dev \
     qtbase5-dev \
     software-properties-common \
@@ -38,6 +41,10 @@ RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/nul
 RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
 RUN add-apt-repository ppa:git-core/ppa
 RUN apt update && apt install -y cmake git git-lfs
+
+# Install sccache
+RUN cargo install sccache
+ENV PATH="${PATH}:/root/.cargo/bin"
 
 # Install a more recent lcov
 RUN wget http://archive.ubuntu.com/ubuntu/pool/universe/l/lcov/lcov_1.14-2_all.deb

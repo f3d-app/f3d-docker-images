@@ -33,6 +33,7 @@ RUN apt update && apt install -y \
     python3-dev \
     qtbase5-dev \
     software-properties-common \
+    libtbb-dev \
     wget \
     xvfb
 

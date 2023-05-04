@@ -4,12 +4,12 @@ RUN apt update
 
 # Install dockerfile dependency
 RUN apt install -y \
-      software-properties-common \
       ca-certificates \
-      wget \
       cargo \
       libssl-dev \
-      pkg-config
+      pkg-config \
+      software-properties-common \
+      wget
 
 # Install generic build dependency
 RUN apt install -y \
@@ -17,13 +17,23 @@ RUN apt install -y \
       g++-8 \
       gcc-8
 
+# Install VTK build dependency
+RUN apt install -y \
+      libgl1-mesa-dev \
+      libglfw3-dev \
+      libglu1-mesa \
+      libssl-dev \
+      libx11-dev \
+      libxcursor-dev \
+      libxt-dev
+
 # Install F3D build dependency
 RUN apt install -y help2man
 
 # Install superbuild dependencies
 RUN apt install -y \
-      curl \
       chrpath \
+      curl \
       gzip
 
 # Install CI tools

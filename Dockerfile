@@ -5,7 +5,8 @@ RUN apt update
 # Install generic build dependency
 RUN apt install -y \
       build-essential \
-      cmake
+      cmake \
+      clang
 
 # Install VTK build dependency
 RUN apt install -y \
@@ -21,7 +22,8 @@ RUN apt install -y \
 RUN apt install -y \
       default-jdk \
       help2man \
-      libqt5opengl5-dev
+      libqt5opengl5-dev \
+      python3-dev
 
 # Install CI tools
 RUN apt install -y \

@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:23.04
 
 # Install needed packages
 RUN apt update && apt install -y \
@@ -6,14 +6,13 @@ RUN apt update && apt install -y \
     build-essential \
     cargo \
     ca-certificates \
-    clang-10 \
+    clang \
     curl \
     chrpath \
     default-jdk \
-    freeglut3 \
     freeglut3-dev \
-    g++-8 \
-    gcc-8 \
+    g++ \
+    gcc \
     gnupg \
     gzip \
     help2man \
@@ -35,22 +34,24 @@ RUN apt update && apt install -y \
     software-properties-common \
     unzip \
     wget \
-    xvfb
-
-# Install up-to-date needed packages
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
-RUN add-apt-repository ppa:git-core/ppa
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
-RUN apt update && apt install -y cmake git git-lfs
-
-# Install sccache
-RUN cargo install sccache
-ENV PATH="${PATH}:/root/.cargo/bin"
-
-# Install a more recent lcov
-RUN wget http://archive.ubuntu.com/ubuntu/pool/universe/l/lcov/lcov_1.14-2_all.deb
-RUN dpkg -i lcov_1.14-2_all.deb
-
-# Use gcc-8 by default
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+    xvfb \
+    cmake \
+    git \
+    git-lfs \
+    lcov \
+    sccache \
+    python3-mako \
+    meson \
+    glslang-tools \
+    libdrm-dev \
+    byacc \
+    flex \
+    libxfixes-dev \
+    libxcb-glx0-dev \
+    libxcb-shm0-dev \ 
+    libx11-xcb-dev \
+    libxcb-dri2-0-dev \
+    libxcb-dri3-dev \
+    libxcb-present-dev \
+    libxshmfence-dev \
+    libxxf86vm-dev

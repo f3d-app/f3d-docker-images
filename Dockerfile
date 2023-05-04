@@ -1,57 +1,31 @@
 FROM ubuntu:23.04
 
-# Install needed packages
-RUN apt update && apt install -y \
-    apt-transport-https \
-    build-essential \
-    cargo \
-    ca-certificates \
-    clang \
-    curl \
-    chrpath \
-    default-jdk \
-    freeglut3-dev \
-    g++ \
-    gcc \
-    gnupg \
-    gzip \
-    help2man \
-    lcov \
-    libgl1-mesa-dev \
-    libglfw3-dev \
-    libglu1-mesa \
-    libjson-perl \
-    libperlio-gzip-perl \
-    libqt5opengl5-dev \
-    libssl-dev \
-    libx11-dev \
-    libxcursor1 \
-    libxt-dev \
-    openssh-client \
-    pkg-config \
-    python3-dev \
-    qtbase5-dev \
-    software-properties-common \
-    unzip \
-    wget \
-    xvfb \
-    cmake \
-    git \
-    git-lfs \
-    lcov \
-    sccache \
-    python3-mako \
-    meson \
-    glslang-tools \
-    libdrm-dev \
-    byacc \
-    flex \
-    libxfixes-dev \
-    libxcb-glx0-dev \
-    libxcb-shm0-dev \ 
-    libx11-xcb-dev \
-    libxcb-dri2-0-dev \
-    libxcb-dri3-dev \
-    libxcb-present-dev \
-    libxshmfence-dev \
-    libxxf86vm-dev
+RUN apt update
+
+# Install generic build dependency
+RUN apt install -y \
+      build-essential \
+      cmake
+
+# Install VTK build dependency
+RUN apt install -y \
+      libgl1-mesa-dev \
+      libglfw3-dev \
+      libglu1-mesa \
+      libssl-dev \
+      libx11-dev \
+      libxcursor-dev \
+      libxt-dev
+
+# Install F3D build and test dependency
+RUN apt install -y \
+      default-jdk \
+      help2man \
+      libqt5opengl5-dev
+
+# Install CI tools
+RUN apt install -y \
+      git \
+      git-lfs \
+      lcov \
+      xvfb

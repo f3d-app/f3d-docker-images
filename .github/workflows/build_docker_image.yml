@@ -26,3 +26,10 @@ jobs:
         push: ${{ github.ref == 'refs/heads/main' }}
         tags: ghcr.io/f3d-app/f3d-ci:latest
         file: Dockerfile
+
+    - name: Build and push superbuild
+      uses: docker/build-push-action@v3
+      with:
+        push: ${{ github.ref == 'refs/heads/main' }}
+        tags: ghcr.io/f3d-app/f3d-ci-superbuild:latest
+        file: Dockerfile-superbuild

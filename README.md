@@ -1,7 +1,6 @@
-# F3D CI Docker setup
+# F3D Docker images for CI
 
-A Dockerfile and automatic workflow to generate a docker image
-used by all F3D CI.
+A collection of Dockerfile used by F3D differents continuous integrations.
 
 # License
 

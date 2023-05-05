@@ -1,9 +1,7 @@
 FROM ubuntu:18.04
 
-RUN apt update
-
 # Install dockerfile dependency
-RUN apt install -y \
+RUN apt update && apt install -y \
       ca-certificates \
       cargo \
       libssl-dev \
@@ -12,13 +10,13 @@ RUN apt install -y \
       wget
 
 # Install generic build dependency
-RUN apt install -y \
+RUN apt update && apt install -y \
       build-essential \
       g++-8 \
       gcc-8
 
 # Install VTK build dependency
-RUN apt install -y \
+RUN apt update && apt install -y \
       libgl1-mesa-dev \
       libglfw3-dev \
       libglu1-mesa \
@@ -28,16 +26,16 @@ RUN apt install -y \
       libxt-dev
 
 # Install F3D build dependency
-RUN apt install -y help2man
+RUN apt update && apt install -y help2man
 
 # Install superbuild dependencies
-RUN apt install -y \
+RUN apt update && apt install -y \
       chrpath \
       curl \
       gzip
 
 # Install CI tools
-RUN apt install -y xvfb
+RUN apt update && apt install -y xvfb
 
 # Install up-to-date needed packages
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null

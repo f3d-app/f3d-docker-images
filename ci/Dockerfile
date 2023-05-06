@@ -28,4 +28,5 @@ RUN apt update && apt install -y \
       git \
       git-lfs \
       lcov \
+      wget \
       xvfb

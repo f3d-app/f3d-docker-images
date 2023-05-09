@@ -25,6 +25,8 @@ RUN apt update && apt install -y \
 
 # Install CI tools
 RUN apt update && apt install -y \
+      clang-tidy \
+      cppcheck \
       git \
       git-lfs \
       lcov \

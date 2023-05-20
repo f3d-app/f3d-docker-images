@@ -1,4 +1,4 @@
-FROM ubuntu:23.04
+FROM ubuntu:22.04
 
 # Install generic build dependency
 RUN apt update && apt install -y \
@@ -20,7 +20,9 @@ RUN apt update && apt install -y \
 RUN apt update && apt install -y \
       default-jdk \
       help2man \
+      libboost-dev \
       libqt5opengl5-dev \
+      libtbb2-dev \
       python3-dev
 
 # Install CI tools

@@ -45,7 +45,7 @@ RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.d
 RUN apt update && apt install -y cmake git git-lfs
 
 # Install sccache
-RUN cargo install sccache
+RUN cargo install sccache --version 0.4.2 --locked
 ENV PATH="${PATH}:/root/.cargo/bin"
 
 # Use gcc-8 by default

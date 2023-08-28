@@ -22,7 +22,6 @@ RUN apt update && apt install -y \
       help2man \
       libboost-dev \
       libqt5opengl5-dev \
-      libtbb2-dev \
       python3-dev
 
 # Install CI tools

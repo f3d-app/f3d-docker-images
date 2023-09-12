@@ -26,7 +26,9 @@ RUN apt update && apt install -y \
       libxt-dev
 
 # Install F3D build dependency
-RUN apt update && apt install -y help2man
+RUN apt update && apt install -y \
+      help2man \
+      python3-dev
 
 # Install superbuild dependencies
 RUN apt update && apt install -y \

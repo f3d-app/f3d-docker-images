@@ -33,3 +33,10 @@ jobs:
         push: ${{ github.ref == 'refs/heads/main' }}
         tags: ghcr.io/f3d-app/f3d-superbuild-ci:latest
         file: superbuild/Dockerfile
+
+    - name: Build and push wheels
+      uses: docker/build-push-action@v3
+      with:
+        push: ${{ github.ref == 'refs/heads/main' }}
+        tags: ghcr.io/f3d-app/wheels-manylinux-ci:latest
+        file: wheels-manylinux/Dockerfile

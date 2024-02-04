@@ -1,4 +1,6 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install dockerfile dependency
 RUN apt update && apt install -y \
@@ -41,7 +43,7 @@ RUN apt update && apt install -y xvfb
 
 # Install up-to-date needed packages
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main'
 RUN add-apt-repository ppa:git-core/ppa
 RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash
 RUN apt update && apt install -y cmake git git-lfs

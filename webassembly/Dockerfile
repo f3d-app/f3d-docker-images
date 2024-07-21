@@ -1,0 +1,50 @@
+FROM dockcross/web-wasm:20240529-0dade71
+
+# Install VTK
+ENV vtk_sha 603cf290299950e64cd3f3463ad3dc3a67b74137
+
+RUN git clone https://gitlab.kitware.com/vtk/vtk.git /vtk-src
+
+RUN cd /vtk-src && git checkout $vtk_sha
+
+RUN cmake -S /vtk-src -B /vtk-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DVTK_BUILD_TESTING=OFF \
+  -DVTK_ENABLE_LOGGING=OFF \
+  -DVTK_ENABLE_REMOTE_MODULES=OFF \
+  -DVTK_ENABLE_WRAPPING=OFF \
+  -DVTK_LEGACY_REMOVE=ON \
+  -DVTK_GROUP_ENABLE_Imaging=DONT_WANT \
+  -DVTK_GROUP_ENABLE_MPI=DONT_WANT \
+  -DVTK_GROUP_ENABLE_Qt=DONT_WANT \
+  -DVTK_GROUP_ENABLE_Rendering=DONT_WANT \
+  -DVTK_GROUP_ENABLE_StandAlone=DONT_WANT \
+  -DVTK_GROUP_ENABLE_Views=DONT_WANT \
+  -DVTK_GROUP_ENABLE_Web=DONT_WANT \
+  -DVTK_MODULE_ENABLE_VTK_CommonCore=YES \
+  -DVTK_MODULE_ENABLE_VTK_CommonDataModel=YES \
+  -DVTK_MODULE_ENABLE_VTK_CommonExecutionModel=YES \
+  -DVTK_MODULE_ENABLE_VTK_CommonSystem=YES \
+  -DVTK_MODULE_ENABLE_VTK_FiltersGeneral=YES \
+  -DVTK_MODULE_ENABLE_VTK_FiltersGeometry=YES \
+  -DVTK_MODULE_ENABLE_VTK_IOCityGML=YES \
+  -DVTK_MODULE_ENABLE_VTK_IOImage=YES \
+  -DVTK_MODULE_ENABLE_VTK_IOImport=YES \
+  -DVTK_MODULE_ENABLE_VTK_IOPLY=YES \
+  -DVTK_MODULE_ENABLE_VTK_IOParallel=YES \
+  -DVTK_MODULE_ENABLE_VTK_IOXML=YES \
+  -DVTK_MODULE_ENABLE_VTK_ImagingCore=YES \
+  -DVTK_MODULE_ENABLE_VTK_ImagingHybrid=YES \
+  -DVTK_MODULE_ENABLE_VTK_InteractionStyle=YES \
+  -DVTK_MODULE_ENABLE_VTK_InteractionWidgets=YES \
+  -DVTK_MODULE_ENABLE_VTK_RenderingAnnotation=YES \
+  -DVTK_MODULE_ENABLE_VTK_RenderingCore=YES \
+  -DVTK_MODULE_ENABLE_VTK_RenderingOpenGL2=YES \
+  -DVTK_MODULE_ENABLE_VTK_RenderingVolumeOpenGL2=YES \
+  -DVTK_MODULE_ENABLE_VTK_TestingCore=YES \
+  -DVTK_SMP_IMPLEMENTATION_TYPE=Sequential \
+  -DVTK_VERSIONED_INSTALL=OFF
+
+RUN cmake --build /vtk-build --target install && rm -rf /vtk-src /vtk-build

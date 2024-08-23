@@ -34,6 +34,62 @@ RUN cmake -S /assimp-src -B /assimp-build \
 RUN cmake --build /assimp-build --target install && rm -rf /assimp-src /assimp-build
 
 ######################################
+# OCCT
+######################################
+FROM base AS occt
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG OCCT_VERSION
+RUN [ -n "$OCCT_VERSION" ]
+
+ADD https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/$OCCT_VERSION.tar.gz /occt-src.tar.gz
+
+RUN mkdir -p /occt-src && tar -xzf /occt-src.tar.gz -C /occt-src --strip-components 1 && rm -rf /occt-src.tar.gz
+
+RUN cmake -S /occt-src -B /occt-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DBUILD_ADDITIONAL_TOOLKITS="TKDESTEP;TKDEIGES;TKMesh;TKBinXCAF" \
+  -DBUILD_DOC_Overview=OFF \
+  -DBUILD_LIBRARY_TYPE=Static \
+  -DBUILD_MODULE_ApplicationFramework=OFF \
+  -DBUILD_MODULE_DETools=OFF \
+  -DBUILD_MODULE_DataExchange=OFF \
+  -DBUILD_MODULE_Draw=OFF \
+  -DBUILD_MODULE_FoundationClasses=OFF \
+  -DBUILD_MODULE_ModelingAlgorithms=OFF \
+  -DBUILD_MODULE_ModelingData=OFF \
+  -DBUILD_MODULE_Visualization=OFF \
+  -DINSTALL_DIR_BIN:PATH=bin \
+  -DUSE_FREETYPE=OFF
+
+RUN cmake --build /occt-build --target install && rm -rf /occt-src /occt-build
+
+######################################
+# Draco
+######################################
+FROM base AS draco
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG DRACO_VERSION
+RUN [ -n "$DRACO_VERSION" ]
+
+ADD https://github.com/google/draco/archive/refs/tags/$DRACO_VERSION.tar.gz /draco-src.tar.gz
+
+RUN mkdir -p /draco-src && tar -xzf /draco-src.tar.gz -C /draco-src --strip-components 1 && rm -rf /draco-src.tar.gz
+
+# Draco requires EMSCRIPTEN env variable pointing to a valid path even if it's unused... so we give the root
+RUN EMSCRIPTEN=/ cmake -S /draco-src -B /draco-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DDRACO_BACKWARDS_COMPATIBILITY=OFF \
+  -DDRACO_JS_GLUE=OFF
+
+RUN cmake --build /draco-build --target install && rm -rf /draco-src /draco-build
+
+######################################
 # VTK
 ######################################
 FROM base AS vtk
@@ -94,4 +150,6 @@ RUN cmake --build /vtk-build --target install && rm -rf /vtk-src /vtk-build
 FROM base
 
 COPY --from=assimp /depends /depends
+COPY --from=draco /depends /depends
+COPY --from=occt /depends /depends
 COPY --from=vtk /depends /depends

@@ -48,6 +48,8 @@ jobs:
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
           ASSIMP_VERSION=v5.4.2
+          DRACO_VERSION=1.5.7
+          OCCT_VERSION=V7_8_1
           VTK_VERSION=1fb0e032df606c64c37448edccf24825e45fb8a4
 
   build_f3d-superbuild-ci:

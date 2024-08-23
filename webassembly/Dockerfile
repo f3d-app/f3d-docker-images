@@ -1,11 +1,50 @@
-FROM dockcross/web-wasm:20240529-0dade71
+FROM dockcross/web-wasm:20240529-0dade71 AS base
 
-# Install VTK
-ENV vtk_sha 603cf290299950e64cd3f3463ad3dc3a67b74137
+######################################
+# Assimp
+######################################
+FROM base AS assimp
 
-RUN git clone https://gitlab.kitware.com/vtk/vtk.git /vtk-src
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG ASSIMP_VERSION
+RUN [ -n "$ASSIMP_VERSION" ]
 
-RUN cd /vtk-src && git checkout $vtk_sha
+ADD https://github.com/assimp/assimp/archive/refs/tags/$ASSIMP_VERSION.tar.gz /assimp-src.tar.gz
+
+RUN mkdir -p /assimp-src && tar -xzf /assimp-src.tar.gz -C /assimp-src --strip-components 1 && rm -rf /assimp-src.tar.gz
+
+RUN cmake -S /assimp-src -B /assimp-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=OFF \
+  -DASSIMP_BUILD_ASSIMP_TOOLS=OFF \
+  -DASSIMP_BUILD_3MF_IMPORTER=ON \
+  -DASSIMP_BUILD_COLLADA_IMPORTER=ON \
+  -DASSIMP_BUILD_DXF_IMPORTER=ON \
+  -DASSIMP_BUILD_FBX_IMPORTER=ON \
+  -DASSIMP_BUILD_OFF_IMPORTER=ON \
+  -DASSIMP_BUILD_X_IMPORTER=ON \
+  -DASSIMP_BUILD_SAMPLES=OFF \
+  -DASSIMP_BUILD_TESTS=OFF \
+  -DASSIMP_BUILD_ZLIB=ON \
+  -DASSIMP_NO_EXPORT=ON \
+  -DASSIMP_WARNINGS_AS_ERRORS=OFF
+
+RUN cmake --build /assimp-build --target install && rm -rf /assimp-src /assimp-build
+
+######################################
+# VTK
+######################################
+FROM base AS vtk
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG VTK_VERSION
+RUN [ -n "$VTK_VERSION" ]
+
+ADD https://gitlab.kitware.com/vtk/vtk/-/archive/$VTK_VERSION/vtk-$VTK_VERSION.tar.gz /vtk-src.tar.gz
+
+RUN mkdir -p /vtk-src && tar -xzf /vtk-src.tar.gz -C /vtk-src --strip-components 1 && rm -rf /vtk-src.tar.gz
 
 RUN cmake -S /vtk-src -B /vtk-build \
   -DBUILD_SHARED_LIBS=OFF \
@@ -48,3 +87,11 @@ RUN cmake -S /vtk-src -B /vtk-build \
   -DVTK_VERSIONED_INSTALL=OFF
 
 RUN cmake --build /vtk-build --target install && rm -rf /vtk-src /vtk-build
+
+######################################
+# Copy artifacts from previous builds
+######################################
+FROM base
+
+COPY --from=assimp /depends /depends
+COPY --from=vtk /depends /depends

@@ -8,6 +8,7 @@ RUN apt update && apt install -y \
 
 # Install VTK build dependency
 RUN apt update && apt install -y \
+      libosmesa6-dev \
       libgl1-mesa-dev \
       libglfw3-dev \
       libglu1-mesa \

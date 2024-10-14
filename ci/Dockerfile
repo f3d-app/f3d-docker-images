@@ -15,7 +15,8 @@ RUN apt update && apt install -y \
       libssl-dev \
       libx11-dev \
       libxcursor-dev \
-      libxt-dev
+      libxt-dev \
+      qt6-base-dev
 
 # Install F3D build and test dependency
 RUN apt update && apt install -y \

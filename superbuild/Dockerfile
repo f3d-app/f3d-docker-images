@@ -40,7 +40,7 @@ RUN apt update && apt install -y \
 
 # Install testing dependency
 RUN apt update && apt install -y \
-      libosmesa6
+      libosmesa6-dev
 
 # Install CI tools
 RUN apt update && apt install -y xvfb

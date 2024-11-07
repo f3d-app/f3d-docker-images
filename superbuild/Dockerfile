@@ -38,6 +38,10 @@ RUN apt update && apt install -y \
       curl \
       gzip
 
+# Install testing dependency
+RUN apt update && apt install -y \
+      libosmesa6
+
 # Install CI tools
 RUN apt update && apt install -y xvfb
 

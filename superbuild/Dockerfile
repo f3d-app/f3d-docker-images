@@ -13,9 +13,7 @@ RUN apt update && apt install -y \
 
 # Install generic build dependency
 RUN apt update && apt install -y \
-      build-essential \
-      g++-8 \
-      gcc-8
+      build-essential
 
 # Install VTK build dependency
 RUN apt update && apt install -y \
@@ -55,6 +53,3 @@ RUN apt update && apt install -y cmake git git-lfs
 # Install sccache
 RUN cargo install sccache --version 0.4.2 --locked
 ENV PATH="${PATH}:/root/.cargo/bin"
-
-# Use gcc-8 by default
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8

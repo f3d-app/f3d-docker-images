@@ -33,4 +33,6 @@ RUN apt update && apt install -y \
       git-lfs \
       lcov \
       wget \
-      xvfb
+      xvfb \
+      curl \
+      jq

@@ -26,7 +26,7 @@ jobs:
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
         tags: ghcr.io/f3d-app/f3d-ci:latest
-        context: ci
+        context: "{{defaultContext}}:ci"
 
   build_f3d-wasm:
     runs-on: ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
         tags: ghcr.io/f3d-app/f3d-wasm:latest
-        context: webassembly
+        context: "{{defaultContext}}:webassembly"
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
           ASSIMP_VERSION=v5.4.2
@@ -98,7 +98,7 @@ jobs:
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
         tags: ghcr.io/f3d-app/f3d-superbuild-ci:latest
-        context: superbuild
+        context: "{{defaultContext}}:superbuild"
 
   build_f3d-wheels-manylinux-ci:
     runs-on: ubuntu-latest
@@ -117,4 +117,4 @@ jobs:
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
         tags: ghcr.io/f3d-app/f3d-wheels-manylinux-ci:latest
-        context: wheels-manylinux
+        context: "{{defaultContext}}:wheels-manylinux"

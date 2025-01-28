@@ -73,7 +73,7 @@ jobs:
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
         tags: ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:latest
-        context: android
+        context: "{{defaultContext}}:android"
         build-args: |
           ANDROID_API=34
           ANDROID_ARCH=${{ matrix.arch }}

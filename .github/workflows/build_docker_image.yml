@@ -56,7 +56,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [arm, arm64, x86, x64]
+        arch: [armeabi-v7a, arm64-v8a, x86, x86_64]
 
     runs-on: ubuntu-latest
     steps:
@@ -74,17 +74,13 @@ jobs:
         push: ${{ github.ref == 'refs/heads/main' }}
         tags: ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:latest
         file: android/Dockerfile
-        build-args: |
+        build-args:
           ANDROID_API=34
-          ANDROID_ARCH=${{  }}
+          ANDROID_ARCH=${{ matrix.arch }}
           ANDROID_NDK=r26b
           CMAKE_BUILD_PARALLEL_LEVEL=4
           ASSIMP_VERSION=v5.4.2
           VTK_VERSION=547c6d2d962f466ea1aa3f22b899576926a124f5
-          ${{ matrix.arch == 'arm' && 'ANDROID_ARCH=armeabi-v7a' || null }}
-          ${{ matrix.arch == 'arm64' && 'ANDROID_ARCH=arm64-v8a' || null }}
-          ${{ matrix.arch == 'x86' && 'ANDROID_ARCH=x86' || null }}
-          ${{ matrix.arch == 'x64' && 'ANDROID_ARCH=x86_64' || null }}
 
   build_f3d-superbuild-ci:
     runs-on: ubuntu-latest

@@ -47,7 +47,7 @@ RUN cmake -S /assimp-src -B /assimp-build \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX:PATH=/depends/$ANDROID_ARCH \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
   -DASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=OFF \
   -DASSIMP_BUILD_ASSIMP_TOOLS=OFF \
   -DASSIMP_BUILD_3MF_IMPORTER=ON \
@@ -58,7 +58,7 @@ RUN cmake -S /assimp-src -B /assimp-build \
   -DASSIMP_BUILD_X_IMPORTER=ON \
   -DASSIMP_BUILD_SAMPLES=OFF \
   -DASSIMP_BUILD_TESTS=OFF \
-  -DASSIMP_BUILD_ZLIB=ON \
+  -DASSIMP_BUILD_ZLIB=OFF \
   -DASSIMP_NO_EXPORT=ON \
   -DASSIMP_WARNINGS_AS_ERRORS=OFF
 
@@ -92,5 +92,5 @@ FROM base
 
 ENV CMAKE_TOOLCHAIN_FILE /android-toolchain.cmake
 
-COPY --from=assimp /depends/$ANDROID_ARCH /depends/$ANDROID_ARCH
-COPY --from=vtk /vtk-build/CMakeExternals/Install/vtk-android /depends/$ANDROID_ARCH
+COPY --from=assimp /depends /depends
+COPY --from=vtk /vtk-build/CMakeExternals/Install/vtk-android /depends

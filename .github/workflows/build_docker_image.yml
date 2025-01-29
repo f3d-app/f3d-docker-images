@@ -50,10 +50,8 @@ jobs:
         context: "{{defaultContext}}:webassembly"
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
-          ALEMBIC_VERSION=1.8.8
           ASSIMP_VERSION=v5.4.2
           DRACO_VERSION=1.5.7
-          IMATH_VERSION=v3.1.12
           OCCT_VERSION=V7_8_1
           VTK_VERSION=${{ env.VTK_SHA }}
 
@@ -84,8 +82,10 @@ jobs:
           ANDROID_ARCH=${{ matrix.arch }}
           ANDROID_NDK=r26b
           CMAKE_BUILD_PARALLEL_LEVEL=4
+          ALEMBIC_VERSION=1.8.8
           ASSIMP_VERSION=v5.4.2
           DRACO_VERSION=1.5.7
+          IMATH_VERSION=v3.1.12
           OCCT_VERSION=V7_8_1
           VTK_VERSION=${{ env.VTK_SHA }}
 

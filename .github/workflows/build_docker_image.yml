@@ -54,6 +54,8 @@ jobs:
           DRACO_VERSION=1.5.7
           OCCT_VERSION=V7_8_1
           VTK_VERSION=${{ env.VTK_SHA }}
+        cache-from: type=registry,ref=ghcr.io/f3d-app/f3d-wasm-${{ env.VTK_SHA }}:buildcache
+        cache-to: type=registry,ref=ghcr.io/f3d-app/f3d-wasm-${{ env.VTK_SHA }}:buildcache,mode=max
 
   build_f3d-android:
     strategy:
@@ -88,6 +90,8 @@ jobs:
           IMATH_VERSION=v3.1.12
           OCCT_VERSION=V7_8_1
           VTK_VERSION=${{ env.VTK_SHA }}
+        cache-from: type=registry,ref=ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}-${{ env.VTK_SHA }}:buildcache
+        cache-to: type=registry,ref=ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}-${{ env.VTK_SHA }}:buildcache,mode=max
 
   build_f3d-superbuild-ci:
     runs-on: ubuntu-latest

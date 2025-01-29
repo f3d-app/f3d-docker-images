@@ -77,7 +77,7 @@ ADD https://gitlab.kitware.com/vtk/vtk/-/archive/$VTK_VERSION/vtk-$VTK_VERSION.t
 RUN mkdir -p /vtk-src && tar -xzf /vtk-src.tar.gz -C /vtk-src --strip-components 1 && rm -rf /vtk-src.tar.gz
 
 RUN cmake -S /vtk-src -B /vtk-build \
-      -DANDROID_ARCH=$ANDROID_ARCH \
+      -DANDROID_ARCH_ABI=$ANDROID_ARCH \
       -DANDROID_NATIVE_API_LEVEL=$ANDROID_API \
       -DANDROID_NDK=/ndk \
       -DCMAKE_BUILD_TYPE=Release \

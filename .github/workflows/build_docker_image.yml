@@ -8,6 +8,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  VTK_SHA: 6a898fd91da30d3ff903416bf856f0d1cea82cdf
+
 jobs:
 
   build_f3d-ci:
@@ -43,14 +46,16 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
-        tags: ghcr.io/f3d-app/f3d-wasm:latest
+        tags: ghcr.io/f3d-app/f3d-wasm:${{ env.VTK_SHA }}
         context: "{{defaultContext}}:webassembly"
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
+          ALEMBIC_VERSION=1.8.8
           ASSIMP_VERSION=v5.4.2
           DRACO_VERSION=1.5.7
+          IMATH_VERSION=v3.1.12
           OCCT_VERSION=V7_8_1
-          VTK_VERSION=6a898fd91da30d3ff903416bf856f0d1cea82cdf
+          VTK_VERSION=${{ env.VTK_SHA }}
 
   build_f3d-android:
     strategy:
@@ -72,7 +77,7 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
-        tags: ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:latest
+        tags: ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:${{ env.VTK_SHA }}
         context: "{{defaultContext}}:android"
         build-args: |
           ANDROID_API=34
@@ -80,7 +85,9 @@ jobs:
           ANDROID_NDK=r26b
           CMAKE_BUILD_PARALLEL_LEVEL=4
           ASSIMP_VERSION=v5.4.2
-          VTK_VERSION=547c6d2d962f466ea1aa3f22b899576926a124f5
+          DRACO_VERSION=1.5.7
+          OCCT_VERSION=V7_8_1
+          VTK_VERSION=${{ env.VTK_SHA }}
 
   build_f3d-superbuild-ci:
     runs-on: ubuntu-latest

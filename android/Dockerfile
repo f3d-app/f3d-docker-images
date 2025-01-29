@@ -32,6 +32,51 @@ RUN mv android-ndk-$ANDROID_NDK /ndk
 COPY android-toolchain.cmake /
 
 ######################################
+# IMath
+######################################
+FROM base AS imath
+
+ARG IMATH_VERSION
+RUN [ -n "$IMATH_VERSION" ]
+
+ADD https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/$IMATH_VERSION.tar.gz /imath-src.tar.gz
+
+RUN mkdir -p /imath-src && tar -xzf /imath-src.tar.gz -C /imath-src --strip-components 1 && rm -rf /imath-src.tar.gz
+
+RUN cmake -S /imath-src -B /imath-build \
+  -DBUILD_TESTING=OFF \
+  -DBUILD_SHARED_LIBS==OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends
+
+RUN cmake --build /imath-build --target install && rm -rf /imath-src /imath-build
+
+######################################
+# Alembic
+######################################
+FROM imath AS alembic
+
+ARG ALEMBIC_VERSION
+RUN [ -n "$ALEMBIC_VERSION" ]
+
+ADD https://github.com/alembic/alembic/archive/refs/tags/$ALEMBIC_VERSION.tar.gz /alembic-src.tar.gz
+
+RUN mkdir -p /alembic-src && tar -xzf /alembic-src.tar.gz -C /alembic-src --strip-components 1 && rm -rf /alembic-src.tar.gz
+
+RUN cmake -S /alembic-src -B /alembic-build \
+  -DALEMBIC_LIB_INSTALL_DIR=lib \
+  -DALEMBIC_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DCMAKE_PREFIX_PATH:PATH=/depends \
+  -DUSE_BINARIES=OFF \
+  -DUSE_TESTS=OFF
+
+RUN cmake --build /alembic-build --target install && rm -rf /alembic-src /alembic-build
+
+######################################
 # Assimp
 ######################################
 FROM base AS assimp
@@ -65,6 +110,62 @@ RUN cmake -S /assimp-src -B /assimp-build \
 RUN cmake --build /assimp-build --target install && rm -rf /assimp-src /assimp-build
 
 ######################################
+# OCCT
+######################################
+FROM base AS occt
+
+ARG OCCT_VERSION
+RUN [ -n "$OCCT_VERSION" ]
+
+ADD https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/$OCCT_VERSION.tar.gz /occt-src.tar.gz
+
+RUN mkdir -p /occt-src && tar -xzf /occt-src.tar.gz -C /occt-src --strip-components 1 && rm -rf /occt-src.tar.gz
+
+RUN cmake -S /occt-src -B /occt-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DBUILD_ADDITIONAL_TOOLKITS="TKDESTEP;TKDEIGES;TKMesh;TKBinXCAF" \
+  -DBUILD_DOC_Overview=OFF \
+  -DBUILD_LIBRARY_TYPE=Static \
+  -DBUILD_MODULE_ApplicationFramework=OFF \
+  -DBUILD_MODULE_DETools=OFF \
+  -DBUILD_MODULE_DataExchange=OFF \
+  -DBUILD_MODULE_Draw=OFF \
+  -DBUILD_MODULE_FoundationClasses=OFF \
+  -DBUILD_MODULE_ModelingAlgorithms=OFF \
+  -DBUILD_MODULE_ModelingData=OFF \
+  -DBUILD_MODULE_Visualization=OFF \
+  -DUSE_FREETYPE=OFF
+
+RUN cmake --build /occt-build --target install && rm -rf /occt-src /occt-build
+
+######################################
+# Draco
+######################################
+FROM base AS draco
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG DRACO_VERSION
+RUN [ -n "$DRACO_VERSION" ]
+
+ADD https://github.com/google/draco/archive/refs/tags/$DRACO_VERSION.tar.gz /draco-src.tar.gz
+
+RUN mkdir -p /draco-src && tar -xzf /draco-src.tar.gz -C /draco-src --strip-components 1 && rm -rf /draco-src.tar.gz
+
+RUN cmake -S /draco-src -B /draco-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DDRACO_BACKWARDS_COMPATIBILITY=OFF \
+  -DDRACO_JS_GLUE=OFF
+
+RUN cmake --build /draco-build --target install && rm -rf /draco-src /draco-build
+
+######################################
 # VTK
 ######################################
 FROM base AS vtk
@@ -92,5 +193,8 @@ FROM base
 
 ENV CMAKE_TOOLCHAIN_FILE /android-toolchain.cmake
 
+COPY --from=alembic /depends /depends
 COPY --from=assimp /depends /depends
+COPY --from=draco /depends /depends
+COPY --from=occt /depends /depends
 COPY --from=vtk /vtk-build/CMakeExternals/Install/vtk-android /depends

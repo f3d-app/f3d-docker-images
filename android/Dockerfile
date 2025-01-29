@@ -25,7 +25,7 @@ RUN apt update && apt install -y \
 
 # Install NDK
 RUN wget https://dl.google.com/android/repository/android-ndk-$ANDROID_NDK-linux.zip
-RUN unzip -qq android-ndk-$ANDROID_NDK-linux.zip
+RUN unzip -qq android-ndk-$ANDROID_NDK-linux.zip && rm -rf android-ndk-$ANDROID_NDK-linux.zip
 RUN mv android-ndk-$ANDROID_NDK /ndk
 
 # Copy toolchain

@@ -191,7 +191,7 @@ RUN cmake --build /vtk-build && rm -rf /vtk-src
 ######################################
 FROM base
 
-ENV CMAKE_TOOLCHAIN_FILE /android-toolchain.cmake
+ENV CMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake
 
 COPY --from=alembic /depends /depends
 COPY --from=assimp /depends /depends

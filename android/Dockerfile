@@ -166,6 +166,30 @@ RUN cmake -S /draco-src -B /draco-build \
 RUN cmake --build /draco-build --target install && rm -rf /draco-src /draco-build
 
 ######################################
+# OpenEXR
+######################################
+FROM imath AS openexr
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG OPENEXR_VERSION
+RUN [ -n "$OPENEXR_VERSION" ]
+
+ADD https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/$OPENEXR_VERSION.tar.gz /openexr-src.tar.gz
+
+RUN mkdir -p /openexr-src && tar -xzf /openexr-src.tar.gz -C /openexr-src --strip-components 1 && rm -rf /openexr-src.tar.gz
+
+RUN cmake -S /openexr-src -B /openexr-build \
+  -DBUILD_TESTING=OFF \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DOPENEXR_BUILD_TOOLS=OFF \
+  -DOPENEXR_BUILD_EXAMPLES=OFF
+
+RUN cmake --build /openexr-build --target install && rm -rf /openexr-src /openexr-build
+
+######################################
 # VTK
 ######################################
 FROM base AS vtk
@@ -197,4 +221,5 @@ COPY --from=alembic /depends /depends
 COPY --from=assimp /depends /depends
 COPY --from=draco /depends /depends
 COPY --from=occt /depends /depends
+COPY --from=openexr /depends /depends
 COPY --from=vtk /vtk-build/CMakeExternals/Install/vtk-android /depends

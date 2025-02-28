@@ -45,7 +45,7 @@ RUN mkdir -p /imath-src && tar -xzf /imath-src.tar.gz -C /imath-src --strip-comp
 
 RUN cmake -S /imath-src -B /imath-build \
   -DBUILD_TESTING=OFF \
-  -DBUILD_SHARED_LIBS==OFF \
+  -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
   -DCMAKE_INSTALL_PREFIX:PATH=/depends

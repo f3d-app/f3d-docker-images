@@ -7,9 +7,11 @@ on:
     branches:
       - main
   workflow_dispatch:
-
-env:
-  VTK_SHA: 77493dd22e4c2caab8607ca750d0cb3c0b1daf81
+    inputs:
+      vtk_sha:
+        description: 'SHA of VTK to build for android and wasm'
+        required: true
+        default: ''
 
 jobs:
 
@@ -42,18 +44,30 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Recover VTK version to build if not set
+      if: ${{ github.event.inputs.vtk_sha == '' }}
+      working-directory: ${{github.workspace}}
+      shell: bash
+      run: echo VTK_COMMIT_SHA=`curl -s https://raw.githubusercontent.com/f3d-app/f3d/master/.github/workflows/versions.json | jq -r '.vtk_commit_sha'` >> $GITHUB_ENV
+
+    - name: Set VTK version to build from input if set
+      if: ${{ github.event.inputs.vtk_sha != '' }}
+      working-directory: ${{github.workspace}}
+      shell: bash
+      run: echo VTK_COMMIT_SHA=${{ github.event.inputs.vtk_sha }}>> $GITHUB_ENV
+
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
-        tags: ghcr.io/f3d-app/f3d-wasm:${{ env.VTK_SHA }}
+        tags: ghcr.io/f3d-app/f3d-wasm:${{ env.VTK_COMMIT_SHA }}
         context: "{{defaultContext}}:webassembly"
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
           ASSIMP_VERSION=v5.4.2
           DRACO_VERSION=1.5.7
           OCCT_VERSION=V7_8_1
-          VTK_VERSION=${{ env.VTK_SHA }}
+          VTK_VERSION=${{ env.VTK_COMMIT_SHA }}
 
   build_f3d-android:
     strategy:
@@ -71,11 +85,23 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
+    - name: Recover VTK version to build if not set
+      if: ${{ github.event.inputs.vtk_sha == '' }}
+      working-directory: ${{github.workspace}}
+      shell: bash
+      run: echo VTK_COMMIT_SHA=`curl -s https://raw.githubusercontent.com/f3d-app/f3d/master/.github/workflows/versions.json | jq -r '.vtk_commit_sha'` >> $GITHUB_ENV
+
+    - name: Set VTK version to build from input if set
+      if: ${{ github.event.inputs.vtk_sha != '' }}
+      working-directory: ${{github.workspace}}
+      shell: bash
+      run: echo VTK_COMMIT_SHA=${{ github.event.inputs.vtk_sha }}>> $GITHUB_ENV
+
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
-        tags: ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:${{ env.VTK_SHA }}
+        tags: ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:${{ env.VTK_COMMIT_SHA }}
         context: "{{defaultContext}}:android"
         build-args: |
           ANDROID_API=34
@@ -88,7 +114,7 @@ jobs:
           IMATH_VERSION=v3.1.12
           OCCT_VERSION=V7_8_1
           OPENEXR_VERSION=v3.3.2
-          VTK_VERSION=${{ env.VTK_SHA }}
+          VTK_VERSION=${{ env.VTK_COMMIT_SHA }}
 
   build_f3d-superbuild-ci:
     runs-on: ubuntu-latest

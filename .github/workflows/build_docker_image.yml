@@ -8,8 +8,8 @@ on:
       - main
   workflow_dispatch:
     inputs:
-      vtk_sha:
-        description: 'SHA of VTK to build for android and wasm'
+      versions_file_url:
+        description: 'URL of the versions.json file to use for android and wasm'
         required: true
         default: ''
 
@@ -85,23 +85,22 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Recover VTK version to build if not set
-      if: ${{ github.event.inputs.vtk_sha == '' }}
+    - name: Recover versions.json to parse
       working-directory: ${{github.workspace}}
       shell: bash
-      run: echo VTK_COMMIT_SHA=`curl -s https://raw.githubusercontent.com/f3d-app/f3d/master/.github/workflows/versions.json | jq -r '.vtk_commit_sha'` >> $GITHUB_ENV
+      run: curl -s ${{ github.event.inputs.versions_file_url == '' && 'https://raw.githubusercontent.com/f3d-app/f3d/master/.github/workflows/versions.json' || github.event.inputs.versions_file_url }} > ./versions.json
 
-    - name: Set VTK version to build from input if set
-      if: ${{ github.event.inputs.vtk_sha != '' }}
-      working-directory: ${{github.workspace}}
-      shell: bash
-      run: echo VTK_COMMIT_SHA=${{ github.event.inputs.vtk_sha }}>> $GITHUB_ENV
+    - name: Set default versions
+      id: set_default_versions
+      uses: ./source/.github/actions/default-versions
+      with:
+        file: ./versions.json
 
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
-        tags: ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:${{ env.VTK_COMMIT_SHA }}
+        tags: ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:${{ steps.set_default_versions.outputs.vtk_commit_sha }}
         context: "{{defaultContext}}:android"
         build-args: |
           ANDROID_API=34
@@ -114,7 +113,7 @@ jobs:
           IMATH_VERSION=v3.1.12
           OCCT_VERSION=V7_8_1
           OPENEXR_VERSION=v3.3.2
-          VTK_VERSION=${{ env.VTK_COMMIT_SHA }}
+          VTK_VERSION=${{ steps.set_default_versions.outputs.vtk_commit_sha }}
 
   build_f3d-superbuild-ci:
     runs-on: ubuntu-latest

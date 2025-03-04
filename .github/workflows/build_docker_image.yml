@@ -106,10 +106,10 @@ jobs:
           ANDROID_ARCH=${{ matrix.arch }}
           ANDROID_NDK=r26b
           CMAKE_BUILD_PARALLEL_LEVEL=4
-          ALEMBIC_VERSION=${{ steps.set_default_versions.outputs.alenbic_version }}
+          ALEMBIC_VERSION=${{ steps.set_default_versions.outputs.alembic_version }}
           ASSIMP_VERSION=${{ steps.set_default_versions.outputs.assimp_version }}
           DRACO_VERSION=${{ steps.set_default_versions.outputs.draco_version }}
-          IMATH_VERSION=${{ steps.set_default_versions.outputs.imath_version }}
+          IMATH_VERSION=v3.1.12
           OCCT_VERSION=${{ steps.set_default_versions.outputs.occt_version }}
           OPENEXR_VERSION=${{ steps.set_default_versions.outputs.openexr_version }}
           VTK_VERSION=${{ steps.set_default_versions.outputs.vtk_commit_sha }}

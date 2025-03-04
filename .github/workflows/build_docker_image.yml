@@ -90,6 +90,13 @@ jobs:
       shell: bash
       run: curl -s ${{ github.event.inputs.versions_file_url == '' && 'https://raw.githubusercontent.com/f3d-app/f3d/master/.github/workflows/versions.json' || github.event.inputs.versions_file_url }} > ./versions.json
 
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        path: 'source'
+        fetch-depth: 1
+        lfs: false
+
     - name: Set default versions
       id: set_default_versions
       uses: ./source/.github/actions/default-versions

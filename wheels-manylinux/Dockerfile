@@ -7,3 +7,6 @@ RUN yum -y update && yum install -y \
   git-lfs \
   mesa-libEGL-devel \
   mesa-libOSMesa-devel
+
+# Downgrade cmake for superbuild compat
+RUN pipx install cmake==3.31.6 --force

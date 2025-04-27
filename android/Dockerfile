@@ -197,7 +197,7 @@ FROM base AS vtk
 ARG VTK_VERSION
 RUN [ -n "$VTK_VERSION" ]
 
-ADD https://gitlab.kitware.com/mwestphal/vtk/-/archive/vtkAndroid_cmake_options/vtk-vtkAndroid_cmake_options.tar.gz /vtk-src.tar.gz
+ADD https://gitlab.kitware.com/vtk/vtk/-/archive/$VTK_VERSION/vtk-$VTK_VERSION.tar.gz /vtk-src.tar.gz
 
 RUN mkdir -p /vtk-src && tar -xzf /vtk-src.tar.gz -C /vtk-src --strip-components 1 && rm -rf /vtk-src.tar.gz
 
@@ -207,7 +207,7 @@ RUN cmake -S /vtk-src -B /vtk-build \
       -DANDROID_NDK=/ndk \
       -DCMAKE_BUILD_TYPE=Release \
       -DVTK_ANDROID_BUILD=ON \
-      -DVTK_ANDROID_USER_OPTIONS="-DVTK_MODULE_ENABLE_VTK_IOInfovis=NO;-DVTK_MODULE_ENABLE_VTK_TestingRendering=NO"
+      -DVTK_ANDROID_USER_OPTIONS="-DVTK_MODULE_ENABLE_VTK_IOInfovis=NO;-DVTK_MODULE_ENABLE_VTK_RenderingLabel=NO;-DVTK_MODULE_ENABLE_VTK_TestingRendering=NO"
 
 RUN cmake --build /vtk-build && rm -rf /vtk-src
 

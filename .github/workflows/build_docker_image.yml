@@ -10,11 +10,11 @@ on:
     inputs:
       versions_file_url:
         description: 'URL of the versions.json file to use for android and wasm'
-        required: true
+        required: false
         default: ''
       vtk_version_override:
         description: 'Hash or tag of VTK to build which overrides the one from versions.json file to use for android and wasm'
-        required: true
+        required: false
         default: ''
 
 jobs:

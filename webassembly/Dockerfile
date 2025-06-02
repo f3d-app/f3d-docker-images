@@ -1,4 +1,6 @@
 FROM dockcross/web-wasm:20240529-0dade71 AS base
+ENV CXXFLAGS="-fwasm-exceptions"
+ENV LDFLAGS="-fwasm-exceptions"
 
 ######################################
 # Assimp

@@ -59,11 +59,13 @@ jobs:
       with:
         file: ./versions.json
 
+    # VTK version is currently being forced
+    # https://github.com/f3d-app/f3d/issues/2289
     - name: Check VTK version override
       id: vtk_version_override
       shell: bash
       run: |
-        vtk_ver=${{ steps.set_default_versions.outputs.vtk_commit_sha }}
+        vtk_ver=26ed83ed4a877ebf50a3a22d0f532015214263ca
         timestamp=${{ steps.set_default_versions.outputs.timestamp }}
         vtk_ver_over=${{ github.event.inputs.vtk_version_override }}
         [ -z $vtk_ver_over ] || vtk_ver=$vtk_ver_over

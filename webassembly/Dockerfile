@@ -1,4 +1,24 @@
-FROM dockcross/web-wasm:20240529-0dade71 AS base
+FROM ubuntu:25.04 AS base
+
+# Install generic build dependency
+RUN apt update && apt install -y \
+      build-essential \
+      cmake \
+      ninja-build \
+      python3 \
+      nodejs
+
+ADD https://github.com/emscripten-core/emsdk/archive/refs/tags/4.0.10.tar.gz /emsdk.tar.gz
+
+RUN mkdir -p /emsdk && tar -xzf /emsdk.tar.gz -C /emsdk --strip-components 1 && rm -rf /emsdk.tar.gz
+
+RUN /emsdk/emsdk install latest
+
+# Configure build environment variables
+ENV CMAKE_GENERATOR=Ninja
+ENV CMAKE_TOOLCHAIN_FILE=/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
+ENV PATH=/emsdk/upstream/bin:/emsdk/upstream/emscripten:$PATH
+ENV CXXFLAGS=-fwasm-exceptions
 
 ######################################
 # Assimp
@@ -45,6 +65,11 @@ RUN [ -n "$OCCT_VERSION" ]
 ADD https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/$OCCT_VERSION.tar.gz /occt-src.tar.gz
 
 RUN mkdir -p /occt-src && tar -xzf /occt-src.tar.gz -C /occt-src --strip-components 1 && rm -rf /occt-src.tar.gz
+
+# By default OCCT converts exception to long jump on Unix
+# This patch removes the macro used to enabled this feature
+COPY occt-exception.patch /
+RUN patch -p1 -d /occt-src < /occt-exception.patch
 
 RUN cmake -S /occt-src -B /occt-build \
   -DBUILD_SHARED_LIBS=OFF \

@@ -71,9 +71,9 @@ jobs:
       run: |
         vtk_ver=${{ steps.set_default_versions.outputs.vtk_commit_sha }}
         timestamp=${{ steps.set_default_versions.outputs.timestamp }}
-        # vtk_ver_over=${{ github.event.inputs.vtk_version_override }}
-        # [ -z $vtk_ver_over ] || vtk_ver=$vtk_ver_over
-        # [ -z $vtk_ver_over ] || timestamp+=_$vtk_ver_over
+        vtk_ver_over=${{ github.event.inputs.vtk_version_override }}
+        [ -z $vtk_ver_over ] || vtk_ver=$vtk_ver_over
+        [ -z $vtk_ver_over ] || timestamp+=_$vtk_ver_over
         echo "F3D_VTK_VERSION=$vtk_ver" >> $GITHUB_ENV
         echo "F3D_TIMESTAMP=$timestamp" >> $GITHUB_ENV
 

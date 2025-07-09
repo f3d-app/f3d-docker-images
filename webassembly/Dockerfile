@@ -8,6 +8,12 @@ RUN apt update && apt install -y \
       python3 \
       nodejs
 
+# Install CI tools
+RUN apt update && apt install -y \
+      git \
+      git-lfs
+
+# Install Emscripten SDK
 ADD https://github.com/emscripten-core/emsdk/archive/refs/tags/4.0.10.tar.gz /emsdk.tar.gz
 
 RUN mkdir -p /emsdk && tar -xzf /emsdk.tar.gz -C /emsdk --strip-components 1 && rm -rf /emsdk.tar.gz

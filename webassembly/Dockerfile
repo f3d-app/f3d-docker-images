@@ -170,6 +170,7 @@ RUN cmake -S /vtk-src -B /vtk-build \
   -DVTK_MODULE_ENABLE_VTK_InteractionWidgets=YES \
   -DVTK_MODULE_ENABLE_VTK_RenderingAnnotation=YES \
   -DVTK_MODULE_ENABLE_VTK_RenderingCore=YES \
+  -DVTK_MODULE_ENABLE_VTK_RenderingGridAxes=YES \
   -DVTK_MODULE_ENABLE_VTK_RenderingOpenGL2=YES \
   -DVTK_MODULE_ENABLE_VTK_RenderingVolumeOpenGL2=YES \
   -DVTK_MODULE_ENABLE_VTK_TestingCore=YES \

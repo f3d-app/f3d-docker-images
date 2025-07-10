@@ -207,7 +207,8 @@ RUN cmake -S /vtk-src -B /vtk-build \
       -DANDROID_NDK=/ndk \
       -DCMAKE_BUILD_TYPE=Release \
       -DVTK_ANDROID_BUILD=ON \
-      -DVTK_ANDROID_USER_OPTIONS="-DVTK_MODULE_ENABLE_VTK_IOInfovis=NO;-DVTK_MODULE_ENABLE_VTK_RenderingLabel=NO;-DVTK_MODULE_ENABLE_VTK_TestingRendering=NO"
+      -DVTK_ANDROID_USER_OPTIONS="-DVTK_MODULE_ENABLE_VTK_IOInfovis=NO;-DVTK_MODULE_ENABLE_VTK_RenderingLabel=NO;-DVTK_MODULE_ENABLE_VTK_TestingRendering=NO;-DVTK_MODULE_ENABLE_VTK_RenderingGridAxes=YES"
+
 
 RUN cmake --build /vtk-build && rm -rf /vtk-src
 

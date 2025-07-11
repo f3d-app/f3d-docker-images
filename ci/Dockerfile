@@ -3,8 +3,14 @@ FROM ubuntu:22.04
 # Install generic build dependency
 RUN apt update && apt install -y \
       build-essential \
-      cmake \
-      clang
+      clang \
+      software-properties-common \
+      wget
+
+# Install up-to-date needed packages
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ jammy main'
+RUN apt update && apt install -y cmake=3.31.6-0kitware1ubuntu22.04.1 cmake-data=3.31.6-0kitware1ubuntu22.04.1
 
 # Install VTK build dependency
 RUN apt update && apt install -y \

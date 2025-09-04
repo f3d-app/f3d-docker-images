@@ -1,4 +1,4 @@
-FROM ubuntu:25.04 AS base
+FROM debian:stable-slim AS base
 
 # Install generic build dependency
 RUN apt update && apt install -y \
@@ -11,7 +11,10 @@ RUN apt update && apt install -y \
 # Install CI tools
 RUN apt update && apt install -y \
       git \
-      git-lfs
+      git-lfs \
+      chromium \
+      xvfb \
+      dbus-x11
 
 # Install Emscripten SDK
 ADD https://github.com/emscripten-core/emsdk/archive/refs/tags/4.0.10.tar.gz /emsdk.tar.gz
@@ -182,9 +185,14 @@ RUN cmake --build /vtk-build --target install && rm -rf /vtk-src /vtk-build
 ######################################
 # Copy artifacts from previous builds
 ######################################
-FROM base
+FROM base AS final
 
 COPY --from=assimp /depends /depends
 COPY --from=draco /depends /depends
 COPY --from=occt /depends /depends
 COPY --from=vtk /depends /depends
+
+ADD run.sh /run.sh
+RUN chmod a+x /run.sh
+
+ENTRYPOINT ["/run.sh"]

@@ -88,6 +88,7 @@ jobs:
           ASSIMP_VERSION=${{ steps.set_default_versions.outputs.assimp_version }}
           DRACO_VERSION=${{ steps.set_default_versions.outputs.draco_version }}
           OCCT_VERSION=${{ steps.set_default_versions.outputs.occt_version }}
+          WEBP_VERSION=${{ steps.set_default_versions.outputs.webp_version }}
           VTK_VERSION=${{ env.F3D_VTK_VERSION }}
 
   build_f3d-android:
@@ -149,6 +150,7 @@ jobs:
           IMATH_VERSION=v3.1.12
           OCCT_VERSION=${{ steps.set_default_versions.outputs.occt_version }}
           OPENEXR_VERSION=${{ steps.set_default_versions.outputs.openexr_version }}
+          WEBP_VERSION=${{ steps.set_default_versions.outputs.webp_version }}
           VTK_VERSION=${{ env.F3D_VTK_VERSION }}
 
   build_f3d-superbuild-ci:

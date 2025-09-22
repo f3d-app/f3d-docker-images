@@ -190,6 +190,38 @@ RUN cmake -S /openexr-src -B /openexr-build \
 RUN cmake --build /openexr-build --target install && rm -rf /openexr-src /openexr-build
 
 ######################################
+# WebP
+######################################
+FROM base AS webp
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG WEBP_VERSION
+RUN [ -n "$WEBP_VERSION" ]
+
+ADD https://github.com/webmproject/libwebp/archive/refs/tags/$WEBP_VERSION.tar.gz /webp-src.tar.gz
+
+RUN mkdir -p /webp-src && tar -xzf /webp-src.tar.gz -C /webp-src --strip-components 1 && rm -rf /webp-src.tar.gz
+
+RUN cmake -S /webp-src -B /webp-build \
+  -DBUILD_TESTING=OFF \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DWEBP_BUILD_ANIM_UTILS=OFF \
+  -DWEBP_BUILD_CWEBP=OFF \
+  -DWEBP_BUILD_DWEBP=OFF \
+  -DWEBP_BUILD_GIF2WEBP=OFF \
+  -DWEBP_BUILD_IMG2WEBP=OFF \
+  -DWEBP_BUILD_VWEBP=OFF \
+  -DWEBP_BUILD_WEBPINFO=OFF \
+  -DWEBP_BUILD_LIBWEBPMUX=OFF \
+  -DWEBP_BUILD_WEBPMUX=OFF \
+  -DWEBP_BUILD_EXTRAS=OFF
+
+RUN cmake --build /webp-build --target install && rm -rf /webp-src /webp-build
+
+######################################
 # VTK
 ######################################
 FROM base AS vtk
@@ -224,4 +256,5 @@ COPY --from=assimp /depends /depends
 COPY --from=draco /depends /depends
 COPY --from=occt /depends /depends
 COPY --from=openexr /depends /depends
+COPY --from=webp /depends /depends
 COPY --from=vtk /vtk-build/CMakeExternals/Install/vtk-android /depends

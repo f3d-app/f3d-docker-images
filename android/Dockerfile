@@ -203,6 +203,7 @@ ADD https://github.com/webmproject/libwebp/archive/refs/tags/$WEBP_VERSION.tar.g
 RUN mkdir -p /webp-src && tar -xzf /webp-src.tar.gz -C /webp-src --strip-components 1 && rm -rf /webp-src.tar.gz
 
 RUN cmake -S /webp-src -B /webp-build \
+  -DANDROID_NDK=/ndk \
   -DBUILD_TESTING=OFF \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
@@ -247,7 +248,7 @@ RUN cmake --build /vtk-build && rm -rf /vtk-src
 ######################################
 # Copy artifacts from previous builds
 ######################################
-FROM base
+FROM base AS final
 
 ENV CMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake
 

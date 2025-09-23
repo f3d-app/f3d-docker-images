@@ -43,7 +43,8 @@ RUN apt update && apt install -y \
 RUN apt update && apt install -y \
       xvfb \
       git \
-      git-lfs
+      git-lfs \
+      jq
 
 # Install up-to-date needed packages
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null

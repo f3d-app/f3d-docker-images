@@ -6,7 +6,8 @@ RUN apt update && apt install -y \
       cmake \
       ninja-build \
       python3 \
-      nodejs
+      nodejs \
+      node-typescript
 
 # Install CI tools
 RUN apt update && apt install -y \

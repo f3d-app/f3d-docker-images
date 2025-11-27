@@ -28,7 +28,11 @@ RUN apt update && apt install -y \
       libboost-dev \
       libqt5opengl5-dev \
       python3-dev \
-      libqt6opengl6-dev
+      libqt6opengl6-dev \
+      qt6-declarative-dev \
+      qml6-module-qtquick \
+      qml6-module-qtquick-window \
+      qml6-module-qtqml-workerscript
 
 # Install CI tools
 RUN apt update && apt install -y \

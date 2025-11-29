@@ -163,7 +163,7 @@ ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG VTK_VERSION
 RUN [ -n "$VTK_VERSION" ]
 
-ADD https://github.com/Kitware/VTK/archive/$VTK_VERSION.tar.gz /vtk-src.tar.gz
+ADD https://gitlab.kitware.com/vtk/vtk/-/archive/$VTK_VERSION/vtk-$VTK_VERSION.tar.gz /vtk-src.tar.gz
 
 RUN mkdir -p /vtk-src && tar -xzf /vtk-src.tar.gz -C /vtk-src --strip-components 1 && rm -rf /vtk-src.tar.gz
 

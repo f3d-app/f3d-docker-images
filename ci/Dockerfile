@@ -26,7 +26,6 @@ RUN apt update && apt install -y \
       default-jdk \
       help2man \
       libboost-dev \
-      libqt5opengl5-dev \
       python3-dev \
       libqt6opengl6-dev \
       qt6-declarative-dev \

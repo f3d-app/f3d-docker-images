@@ -223,6 +223,30 @@ RUN cmake -S /webp-src -B /webp-build \
 RUN cmake --build /webp-build --target install && rm -rf /webp-src /webp-build
 
 ######################################
+# web-ifc
+######################################
+FROM base AS webifc
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG WEBIFC_VERSION
+RUN [ -n "$WEBIFC_VERSION" ]
+
+ADD https://github.com/ThatOpen/engine_web-ifc/archive/refs/tags/$WEBIFC_VERSION.tar.gz /webifc-src.tar.gz
+
+RUN mkdir -p /webifc-src && tar -xzf /webifc-src.tar.gz -C /webifc-src --strip-components 1 && rm -rf /webifc-src.tar.gz
+
+COPY webifc-sstream.patch /
+RUN patch -p1 -d /webifc-src < /webifc-sstream.patch
+
+RUN cmake -S /webifc-src/src/cpp -B /webifc-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends
+
+RUN cmake --build /webifc-build --target install && rm -rf /webifc-src /webifc-build
+
+######################################
 # VTK
 ######################################
 FROM base AS vtk
@@ -258,4 +282,5 @@ COPY --from=draco /depends /depends
 COPY --from=occt /depends /depends
 COPY --from=openexr /depends /depends
 COPY --from=webp /depends /depends
+COPY --from=webifc /depends /depends
 COPY --from=vtk /vtk-build/CMakeExternals/Install/vtk-android /depends

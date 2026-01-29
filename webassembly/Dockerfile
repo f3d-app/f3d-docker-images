@@ -155,6 +155,26 @@ RUN cmake -S /webp-src -B /webp-build \
 RUN cmake --build /webp-build --target install && rm -rf /webp-src /webp-build
 
 ######################################
+# web-ifc
+######################################
+FROM base AS webifc
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG WEBIFC_VERSION
+RUN [ -n "$WEBIFC_VERSION" ]
+
+ADD https://github.com/ThatOpen/engine_web-ifc/archive/refs/tags/$WEBIFC_VERSION.tar.gz /webifc-src.tar.gz
+
+RUN mkdir -p /webifc-src && tar -xzf /webifc-src.tar.gz -C /webifc-src --strip-components 1 && rm -rf /webifc-src.tar.gz
+
+RUN cmake -S /webifc-src/src/cpp -B /webifc-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends
+
+RUN cmake --build /webifc-build --target install && rm -rf /webifc-src /webifc-build
+
+######################################
 # VTK
 ######################################
 FROM base AS vtk
@@ -223,6 +243,7 @@ COPY --from=draco /depends /depends
 COPY --from=occt /depends /depends
 COPY --from=vtk /depends /depends
 COPY --from=webp /depends /depends
+COPY --from=webifc /depends /depends
 
 ADD run.sh /run.sh
 RUN chmod a+x /run.sh

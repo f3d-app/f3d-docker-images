@@ -1,0 +1,164 @@
+--- a/src/cpp/CMakeLists.txt	2026-02-01 18:38:07.620713248 +0100
++++ b/src/cpp/CMakeLists.txt	2026-02-01 18:38:42.668278803 +0100
+@@ -116,22 +116,22 @@
+ 	set_target_properties(web-ifc-mt PROPERTIES LINK_FLAGS "${DEBUG_FLAG} -pthread -s PTHREAD_POOL_SIZE=navigator.hardwareConcurrency --bind -flto --define-macro=REAL_T_IS_DOUBLE -sSTACK_SIZE=5MB -s ALLOW_MEMORY_GROWTH=1 -s MAXIMUM_MEMORY=4GB -s EXPORT_NAME=WebIFCWasm -s MODULARIZE=1 -s ENVIRONMENT=web,worker")
+ endif()
+ 
+-if(NOT EMSCRIPTEN)
+-	include(GNUInstallDirs)
+-	include(CMakePackageConfigHelpers)
++include(GNUInstallDirs)
++include(CMakePackageConfigHelpers)
+ 
+-	# build web-ifc as a static library
+-	add_library(web-ifc-library STATIC ${web-ifc-source})
+-	param_setter(web-ifc-library)
+-
+-	# Add generator expressions for install support
+-	target_include_directories(web-ifc-library PUBLIC
+-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/web-ifc>
+-		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+-		$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/web-ifc>
+-	)
++# build web-ifc as a static library
++add_library(web-ifc-library STATIC ${web-ifc-source})
++param_setter(web-ifc-library)
++
++# Add generator expressions for install support
++target_include_directories(web-ifc-library PUBLIC
++	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
++	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/web-ifc>
++	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
++	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/web-ifc>
++)
+ 
++if(NOT EMSCRIPTEN)
+ 	# build parameters for web-ifc-test
+ 	add_executable(web-ifc-test ${web-ifc-source} "./test/encoding_test.cpp" "./test/main.cpp" "./test/io_helpers.cpp")
+ 	param_setter(web-ifc-test)
+@@ -150,64 +150,64 @@
+ 		target_compile_options(web-ifc PUBLIC "-DCSG_DEBUG_OUTPUT")
+ 		target_compile_options(web-ifc PUBLIC "-DDEBUG_DUMP_SVG")
+ 	endif()
+-
+-	# Installation rules
+-	# Install the static library
+-	install(TARGETS web-ifc-library
+-		EXPORT web-ifc-targets
+-		ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-		LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+-	)
+-
+-	# Install web-ifc headers
+-	install(DIRECTORY web-ifc/
+-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/web-ifc
+-		FILES_MATCHING PATTERN "*.h"
+-	)
+-
+-	# Install version.h
+-	install(FILES version.h
+-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/web-ifc
+-	)
+-
+-	# Install bundled dependency headers (all header-only)
+-	install(DIRECTORY ${fastfloat_SOURCE_DIR}/include/
+-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+-	)
+-	install(DIRECTORY ${tinynurbs_SOURCE_DIR}/include/
+-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+-	)
+-	install(DIRECTORY ${glm_SOURCE_DIR}/glm
+-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+-	)
+-	install(DIRECTORY ${earcut_SOURCE_DIR}/include/
+-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+-	)
+-	install(DIRECTORY ${cdt_SOURCE_DIR}/CDT/include/
+-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+-	)
+-	install(DIRECTORY ${spdlog_SOURCE_DIR}/include/
+-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+-	)
+-	install(DIRECTORY ${stduuid_SOURCE_DIR}/include/
+-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+-	)
+-
+-	# Export targets with namespace
+-	install(EXPORT web-ifc-targets
+-		FILE web-ifc-targets.cmake
+-		NAMESPACE web-ifc::
+-		DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/web-ifc
+-	)
+-
+-	# Generate and install CMake config file
+-	configure_package_config_file(
+-		${CMAKE_CURRENT_SOURCE_DIR}/cmake/web-ifc-config.cmake.in
+-		${CMAKE_CURRENT_BINARY_DIR}/web-ifc-config.cmake
+-		INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/web-ifc
+-	)
+-
+-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/web-ifc-config.cmake
+-		DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/web-ifc
+-	)
+ endif()
++
++# Installation rules
++# Install the static library
++install(TARGETS web-ifc-library
++	EXPORT web-ifc-targets
++	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
++	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
++)
++
++# Install web-ifc headers
++install(DIRECTORY web-ifc/
++	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/web-ifc
++	FILES_MATCHING PATTERN "*.h"
++)
++
++# Install version.h
++install(FILES version.h
++	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/web-ifc
++)
++
++# Install bundled dependency headers (all header-only)
++install(DIRECTORY ${fastfloat_SOURCE_DIR}/include/
++	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++)
++install(DIRECTORY ${tinynurbs_SOURCE_DIR}/include/
++	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++)
++install(DIRECTORY ${glm_SOURCE_DIR}/glm
++	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++)
++install(DIRECTORY ${earcut_SOURCE_DIR}/include/
++	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++)
++install(DIRECTORY ${cdt_SOURCE_DIR}/CDT/include/
++	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++)
++install(DIRECTORY ${spdlog_SOURCE_DIR}/include/
++	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++)
++install(DIRECTORY ${stduuid_SOURCE_DIR}/include/
++	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++)
++
++# Export targets with namespace
++install(EXPORT web-ifc-targets
++	FILE web-ifc-targets.cmake
++	NAMESPACE web-ifc::
++	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/web-ifc
++)
++
++# Generate and install CMake config file
++configure_package_config_file(
++	${CMAKE_CURRENT_SOURCE_DIR}/cmake/web-ifc-config.cmake.in
++	${CMAKE_CURRENT_BINARY_DIR}/web-ifc-config.cmake
++	INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/web-ifc
++)
++
++install(FILES ${CMAKE_CURRENT_BINARY_DIR}/web-ifc-config.cmake
++	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/web-ifc
++)

@@ -167,6 +167,9 @@ ADD https://github.com/ThatOpen/engine_web-ifc/archive/refs/tags/$WEBIFC_VERSION
 
 RUN mkdir -p /webifc-src && tar -xzf /webifc-src.tar.gz -C /webifc-src --strip-components 1 && rm -rf /webifc-src.tar.gz
 
+COPY webifc-emscripten-install.patch /
+RUN patch -p1 -d /webifc-src < /webifc-emscripten-install.patch
+
 RUN cmake -S /webifc-src/src/cpp -B /webifc-build \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_BUILD_TYPE=Release \

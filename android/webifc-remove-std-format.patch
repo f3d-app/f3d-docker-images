@@ -1,9 +1,9 @@
 diff --git a/src/cpp/web-ifc/geometry/IfcGeometryLoader.cpp b/src/cpp/web-ifc/geometry/IfcGeometryLoader.cpp
-index ebfaf3f2..13ef5d50 100644
+index aa98edfc..7541cf83 100644
 --- a/src/cpp/web-ifc/geometry/IfcGeometryLoader.cpp
 +++ b/src/cpp/web-ifc/geometry/IfcGeometryLoader.cpp
 @@ -4,6 +4,7 @@
-
+ 
  #include <spdlog/spdlog.h>
  #include <iomanip>
 +#include <sstream>
@@ -25,9 +25,9 @@ index ae592775..4cb54410 100644
  #include <spdlog/spdlog.h>
  #include "IfcLoader.h"
 @@ -354,7 +355,9 @@ namespace webifc::parsing {
-
+ 
     void IfcLoader::PushDouble(double input)
-    {
+    {             
 -      std::string numberString = std::format("{}", input);
 +      std::array<char, 64> buf;
 +      auto [ptr, ec] = std::to_chars(buf.data(), buf.data() + buf.size(), input);

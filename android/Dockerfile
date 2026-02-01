@@ -235,7 +235,7 @@ ADD https://github.com/ThatOpen/engine_web-ifc/archive/refs/tags/$WEBIFC_VERSION
 
 RUN mkdir -p /webifc-src && tar -xzf /webifc-src.tar.gz -C /webifc-src --strip-components 1 && rm -rf /webifc-src.tar.gz
 
-COPY webifc-sstream.patch /
+COPY  /webifc-remove-std-format.patch
 RUN patch -p1 -d /webifc-src < /webifc-remove-std-format.patch
 
 RUN cmake -S /webifc-src/src/cpp -B /webifc-build \

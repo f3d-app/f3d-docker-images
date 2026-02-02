@@ -241,6 +241,7 @@ RUN patch -p1 -d /webifc-src < /webifc-remove-std-format.patch
 RUN cmake -S /webifc-src/src/cpp -B /webifc-build \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX:PATH=/depends
 

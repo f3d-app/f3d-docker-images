@@ -72,16 +72,19 @@ jobs:
         vtk_ver=${{ steps.set_default_versions.outputs.vtk_commit_sha }}
         docker_timestamp=${{ steps.set_default_versions.outputs.docker_timestamp }}
         vtk_ver_over=${{ github.event.inputs.vtk_version_override }}
+        docker_tag=latest
         [ -z $vtk_ver_over ] || vtk_ver=$vtk_ver_over
         [ -z $vtk_ver_over ] || docker_timestamp+=_$vtk_ver_over
+        [ -z $vtk_ver_over ] || docker_tag=nightly
         echo "F3D_VTK_VERSION=$vtk_ver" >> $GITHUB_ENV
         echo "F3D_DOCKER_TIMESTAMP=$docker_timestamp" >> $GITHUB_ENV
+        echo "F3D_DOCKER_TAG=$docker_tag" >> $GITHUB_ENV
 
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
-        tags: ghcr.io/f3d-app/f3d-wasm:${{ env.F3D_DOCKER_TIMESTAMP }}, ghcr.io/f3d-app/f3d-wasm:latest
+        tags: ghcr.io/f3d-app/f3d-wasm:${{ env.F3D_DOCKER_TIMESTAMP }}, ghcr.io/f3d-app/f3d-wasm:${{ env.F3D_DOCKER_TAG }}
         context: "{{defaultContext}}:webassembly"
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
@@ -129,16 +132,19 @@ jobs:
         vtk_ver=${{ steps.set_default_versions.outputs.vtk_commit_sha }}
         docker_timestamp=${{ steps.set_default_versions.outputs.docker_timestamp }}
         vtk_ver_over=${{ github.event.inputs.vtk_version_override }}
+        docker_tag=latest
         [ -z $vtk_ver_over ] || vtk_ver=$vtk_ver_over
         [ -z $vtk_ver_over ] || docker_timestamp+=_$vtk_ver_over
+        [ -z $vtk_ver_over ] || docker_tag=nightly
         echo "F3D_VTK_VERSION=$vtk_ver" >> $GITHUB_ENV
         echo "F3D_DOCKER_TIMESTAMP=$docker_timestamp" >> $GITHUB_ENV
+        echo "F3D_DOCKER_TAG=$docker_tag" >> $GITHUB_ENV
 
     - name: Build and push
       uses: docker/build-push-action@v6
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
-        tags: ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:${{ env.F3D_DOCKER_TIMESTAMP }}, ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:latest
+        tags: ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:${{ env.F3D_DOCKER_TIMESTAMP }}, ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:${{ env.F3D_DOCKER_TAG }}
         context: "{{defaultContext}}:android"
         build-args: |
           ANDROID_API=34

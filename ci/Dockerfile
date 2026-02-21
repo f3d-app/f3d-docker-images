@@ -10,7 +10,7 @@ RUN apt update && apt install -y \
       build-essential \
       clang
 
-# Install VTK build dependency
+# Install VTK and others build dependency
 RUN apt update && apt install -y \
       libosmesa6-dev \
       libgl1-mesa-dev \
@@ -19,14 +19,14 @@ RUN apt update && apt install -y \
       libssl-dev \
       libx11-dev \
       libxcursor-dev \
-      libxt-dev
+      libxt-dev \
+      libpng-dev # clip
 
 # Install F3D build and test dependency
 RUN apt update && apt install -y \
       default-jdk \
       help2man \
       libboost-dev \
-      libqt5opengl5-dev \
       python3-dev \
       libqt6opengl6-dev \
       qt6-declarative-dev \

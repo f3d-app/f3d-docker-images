@@ -147,9 +147,9 @@ jobs:
         tags: ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:${{ env.F3D_DOCKER_TIMESTAMP }}, ghcr.io/f3d-app/f3d-android-${{ matrix.arch }}:${{ env.F3D_DOCKER_TAG }}
         context: "{{defaultContext}}:android"
         build-args: |
-          ANDROID_API=34
+          ANDROID_API=28
           ANDROID_ARCH=${{ matrix.arch }}
-          ANDROID_NDK=r26b
+          ANDROID_NDK=r27d
           CMAKE_BUILD_PARALLEL_LEVEL=4
           ALEMBIC_VERSION=${{ steps.set_default_versions.outputs.alembic_version }}
           ASSIMP_VERSION=${{ steps.set_default_versions.outputs.assimp_version }}

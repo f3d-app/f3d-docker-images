@@ -33,6 +33,7 @@ RUN apt update && apt install -y \
 RUN apt update && apt install -y \
       chrpath \
       curl \
+      file \
       gzip
 
 # Install testing dependency

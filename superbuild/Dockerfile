@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -13,7 +13,8 @@ RUN apt update && apt install -y \
 
 # Install generic build dependency
 RUN apt update && apt install -y \
-      build-essential
+      build-essential \
+      cmake
 
 # Install VTK build dependency
 RUN apt update && apt install -y \
@@ -46,17 +47,6 @@ RUN apt update && apt install -y \
       git \
       git-lfs \
       jq
-
-# Install newer CMake
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ jammy main'
-RUN apt update && apt install -y cmake=3.31.6-0kitware1ubuntu22.04.1 cmake-data=3.31.6-0kitware1ubuntu22.04.1
-
-# Install GCC-13 (for C++20 support)
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test
-RUN apt update && apt install -y gcc-13 g++-13
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100 \
- && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 100
 
 # Install sccache
 RUN cargo install sccache --version 0.4.2 --locked

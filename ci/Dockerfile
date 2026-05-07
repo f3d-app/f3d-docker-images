@@ -12,6 +12,7 @@ RUN apt update && apt install -y \
 
 # Install VTK and others build dependency
 RUN apt update && apt install -y \
+      file \ # superbuild
       libosmesa6-dev \
       libgl1-mesa-dev \
       libglfw3-dev \

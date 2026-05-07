@@ -11,8 +11,9 @@ RUN apt update && apt install -y \
       clang
 
 # Install VTK and others build dependency
+# file is needed for the superbuild
 RUN apt update && apt install -y \
-      file \ # superbuild
+      file \
       libosmesa6-dev \
       libgl1-mesa-dev \
       libglfw3-dev \

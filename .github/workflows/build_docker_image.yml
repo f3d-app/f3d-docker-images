@@ -59,11 +59,54 @@ jobs:
       shell: bash
       run: curl -s ${{ github.event.inputs.versions_file_url || 'https://raw.githubusercontent.com/f3d-app/f3d/master/.github/workflows/versions.json' }} > ./versions.json
 
-    - name: Set default versions
-      id: set_default_versions
-      uses: f3d-app/default-versions-action@main
+    - name: Extract docker timestamp
+      id: docker_timestamp
+      uses: f3d-app/extract-version-action@main
       with:
         file: ./versions.json
+        special_name: docker_timestamp
+
+    - name: Recover VTK version
+      id: vtk_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        special_name: vtk_commit_sha
+
+    - name: Extract assimp version
+      id: assimp_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: assimp
+
+    - name: Extract draco version
+      id: draco_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: draco
+
+    - name: Extract occt version
+      id: occt_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: occt
+
+    - name: Extract webp version
+      id: webp_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: webp
+
+    - name: Extract webifc version
+      id: webifc_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: webifc
 
     - name: Check VTK version override
       id: vtk_version_override
@@ -88,11 +131,11 @@ jobs:
         context: "{{defaultContext}}:webassembly"
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
-          ASSIMP_VERSION=${{ steps.set_default_versions.outputs.assimp_version }}
-          DRACO_VERSION=${{ steps.set_default_versions.outputs.draco_version }}
-          OCCT_VERSION=${{ steps.set_default_versions.outputs.occt_version }}
-          WEBP_VERSION=${{ steps.set_default_versions.outputs.webp_version }}
-          WEBIFC_VERSION=${{ steps.set_default_versions.outputs.webifc_version }}
+          ASSIMP_VERSION=${{ steps.assimp_ver.outputs.extract }}
+          DRACO_VERSION=${{ steps.draco_ver.outputs.extract }}
+          OCCT_VERSION=${{ steps.occt_ver.outputs.extract }}
+          WEBP_VERSION=${{ steps.webp_ver.outputs.extract }}
+          WEBIFC_VERSION=${{ steps.webifc_ver.outputs.extract }}
           VTK_VERSION=${{ env.F3D_VTK_VERSION }}
 
   build_f3d-android:
@@ -119,11 +162,75 @@ jobs:
       shell: bash
       run: curl -s ${{ github.event.inputs.versions_file_url == '' && 'https://raw.githubusercontent.com/f3d-app/f3d/master/.github/workflows/versions.json' || github.event.inputs.versions_file_url }} > ./versions.json
 
-    - name: Set default versions
-      id: set_default_versions
-      uses: f3d-app/default-versions-action@main
+    - name: Extract docker timestamp
+      id: docker_timestamp
+      uses: f3d-app/extract-version-action@main
       with:
         file: ./versions.json
+        special_name: docker_timestamp
+
+    - name: Recover VTK version
+      id: vtk_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        special_name: vtk_commit_sha
+
+    - name: Extract alembic version
+      id: alembic_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: alembic
+
+    - name: Extract assimp version
+      id: assimp_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: assimp
+
+    - name: Extract draco version
+      id: draco_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: draco
+
+    - name: Extract imath version
+      id: imath_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: imath
+
+    - name: Extract occt version
+      id: occt_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: occt
+
+    - name: Extract openexr version
+      id: openexr_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: openexr
+
+    - name: Extract webp version
+      id: webp_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: webp
+
+    - name: Extract webifc version
+      id: webifc_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: webifc
 
     - name: Check VTK version override
       id: vtk_version_override
@@ -151,14 +258,14 @@ jobs:
           ANDROID_ARCH=${{ matrix.arch }}
           ANDROID_NDK=r27d
           CMAKE_BUILD_PARALLEL_LEVEL=4
-          ALEMBIC_VERSION=${{ steps.set_default_versions.outputs.alembic_version }}
-          ASSIMP_VERSION=${{ steps.set_default_versions.outputs.assimp_version }}
-          DRACO_VERSION=${{ steps.set_default_versions.outputs.draco_version }}
-          IMATH_VERSION=v3.1.12
-          OCCT_VERSION=${{ steps.set_default_versions.outputs.occt_version }}
-          OPENEXR_VERSION=${{ steps.set_default_versions.outputs.openexr_version }}
-          WEBP_VERSION=${{ steps.set_default_versions.outputs.webp_version }}
-          WEBIFC_VERSION=${{ steps.set_default_versions.outputs.webifc_version }}
+          ALEMBIC_VERSION=${{ steps.alembic_ver.outputs.extract }}
+          ASSIMP_VERSION=${{ steps.assimp_ver.outputs.extract }}
+          DRACO_VERSION=${{ steps.draco_ver.outputs.extract }}
+          IMATH_VERSION=${{ steps.imath_ver.outputs.extract }}
+          OCCT_VERSION=${{ steps.occt_ver.outputs.extract }}
+          OPENEXR_VERSION=${{ steps.openexr_ver.outputs.extract }}
+          WEBP_VERSION=${{ steps.webp_ver.outputs.extract }}
+          WEBIFC_VERSION=${{ steps.webifc_ver.outputs.extract }}
           VTK_VERSION=${{ env.F3D_VTK_VERSION }}
 
   build_f3d-superbuild-ci:

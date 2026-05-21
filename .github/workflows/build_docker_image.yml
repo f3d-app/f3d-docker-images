@@ -112,8 +112,8 @@ jobs:
       id: vtk_version_override
       shell: bash
       run: |
-        vtk_ver=${{ steps.set_default_versions.outputs.vtk_commit_sha }}
-        docker_timestamp=${{ steps.set_default_versions.outputs.docker_timestamp }}
+        vtk_ver=${{ steps.vtk_ver.outputs.extract }}
+        docker_timestamp=${{ steps.docker_timestamp.outputs.extract }}
         vtk_ver_over=${{ github.event.inputs.vtk_version_override }}
         docker_tag=latest
         [ -z $vtk_ver_over ] || vtk_ver=$vtk_ver_over
@@ -236,8 +236,8 @@ jobs:
       id: vtk_version_override
       shell: bash
       run: |
-        vtk_ver=${{ steps.set_default_versions.outputs.vtk_commit_sha }}
-        docker_timestamp=${{ steps.set_default_versions.outputs.docker_timestamp }}
+        vtk_ver=${{ steps.vtk_ver.outputs.extract }}
+        docker_timestamp=${{ steps.docker_timestamp.outputs.extract }}
         vtk_ver_over=${{ github.event.inputs.vtk_version_override }}
         docker_tag=latest
         [ -z $vtk_ver_over ] || vtk_ver=$vtk_ver_over

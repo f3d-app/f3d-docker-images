@@ -17,11 +17,15 @@ ENV ANDROID_ARCH=$ANDROID_ARCH
 # Install generic compilation tools
 RUN apt update && apt install -y \
       build-essential \
-      cmake \
       default-jdk \
       git \
       unzip \
       wget
+
+# Install up-to-date needed packages
+RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
+RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ noble main'
+RUN apt update && apt install -y cmake=3.31.6-0kitware1ubuntu24.04.1 cmake-data=3.31.6-0kitware1ubuntu24.04.1
 
 # Install NDK
 RUN wget https://dl.google.com/android/repository/android-ndk-$ANDROID_NDK-linux.zip

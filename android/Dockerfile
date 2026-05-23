@@ -14,13 +14,20 @@ ARG ANDROID_ARCH
 RUN [ -n "$ANDROID_ARCH" ]
 ENV ANDROID_ARCH=$ANDROID_ARCH
 
+# Install dockerfile dependency
+RUN apt update && apt install -y \
+      ca-certificates \
+      libssl-dev \
+      pkg-config \
+      software-properties-common \
+      wget
+
 # Install generic compilation tools
 RUN apt update && apt install -y \
       build-essential \
       default-jdk \
       git \
-      unzip \
-      wget
+      unzip
 
 # Install up-to-date needed packages
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null

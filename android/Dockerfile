@@ -192,11 +192,12 @@ RUN mkdir -p /openexr-src && tar -xzf /openexr-src.tar.gz -C /openexr-src --stri
 RUN cmake -S /openexr-src -B /openexr-build \
   -DBUILD_TESTING=OFF \
   -DBUILD_SHARED_LIBS=OFF \
-  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
+  -DOPENEXR_BUILD_EXAMPLES=OFF \
   -DOPENEXR_BUILD_TOOLS=OFF \
-  -DOPENEXR_BUILD_EXAMPLES=OFF
+  -DOPENEXR_FORCE_INTERNAL_OPENJPH=ON
 
 RUN cmake --build /openexr-build --target install && rm -rf /openexr-src /openexr-build
 

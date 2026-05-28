@@ -43,9 +43,32 @@ RUN mv android-ndk-$ANDROID_NDK /ndk
 COPY android-toolchain.cmake /
 
 ######################################
+# openjph
+######################################
+FROM base AS openjph
+
+ARG OPENJPH_VERSION
+RUN [ -n "$OPENJPH_VERSION" ]
+
+ADD https://github.com/aous72/openjph/archive/refs/tags/$OPENJPH_VERSION.tar.gz /openjph-src.tar.gz
+
+RUN mkdir -p /openjph-src && tar -xzf /openjph-src.tar.gz -C /openjph-src --strip-components 1 && rm -rf /openjph-src.tar.gz
+
+RUN cmake -S /openjph-src -B /openjph-build \
+  -DBUILD_TESTING=OFF \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
+  -DOJPH_ENABLE_TIFF_SUPPORT=OFF \
+  -DUSE_TIFF=OFF
+
+RUN cmake --build /openjph-build --target install && rm -rf /openjph-src /openjph-build
+
+######################################
 # IMath
 ######################################
-FROM base AS imath
+FROM openjph AS imath
 
 ARG IMATH_VERSION
 RUN [ -n "$IMATH_VERSION" ]
@@ -197,7 +220,7 @@ RUN cmake -S /openexr-src -B /openexr-build \
   -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
   -DOPENEXR_BUILD_EXAMPLES=OFF \
   -DOPENEXR_BUILD_TOOLS=OFF \
-  -DOPENEXR_FORCE_INTERNAL_OPENJPH=ON
+  -DOPENEXR_FORCE_INTERNAL_OPENJPH=OFF
 
 RUN cmake --build /openexr-build --target install && rm -rf /openexr-src /openexr-build
 

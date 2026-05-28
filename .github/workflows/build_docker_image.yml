@@ -197,6 +197,13 @@ jobs:
         file: ./versions.json
         name: draco
 
+    - name: Extract openjph version
+      id: openjph_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        name: openjph
+
     - name: Extract imath version
       id: imath_ver
       uses: f3d-app/extract-version-action@main
@@ -261,6 +268,7 @@ jobs:
           ALEMBIC_VERSION=${{ steps.alembic_ver.outputs.extract }}
           ASSIMP_VERSION=${{ steps.assimp_ver.outputs.extract }}
           DRACO_VERSION=${{ steps.draco_ver.outputs.extract }}
+          OPENJPH_VERSION=${{ steps.openjph_ver.outputs.extract }}
           IMATH_VERSION=${{ steps.imath_ver.outputs.extract }}
           OCCT_VERSION=${{ steps.occt_ver.outputs.extract }}
           OPENEXR_VERSION=${{ steps.openexr_ver.outputs.extract }}

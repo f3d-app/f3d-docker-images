@@ -4,10 +4,12 @@ FROM debian:stable-slim AS base
 RUN apt update && apt install -y \
       build-essential \
       cmake \
+      jq \
       ninja-build \
       python3 \
       nodejs \
-      node-typescript
+      node-typescript \
+      wget
 
 # Install CI tools
 RUN apt update && apt install -y \
@@ -30,6 +32,9 @@ ENV CMAKE_TOOLCHAIN_FILE=/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscr
 ENV PATH=/emsdk/upstream/bin:/emsdk/upstream/emscripten:$PATH
 ENV CXXFLAGS=-fwasm-exceptions
 
+# Copy F3D version.json
+ADD https://raw.githubusercontent.com/f3d-app/f3d/refs/heads/master/.github/workflows/versions.json /versions.json
+
 ######################################
 # Assimp
 ######################################
@@ -37,9 +42,8 @@ FROM base AS assimp
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG ASSIMP_VERSION
-RUN [ -n "$ASSIMP_VERSION" ]
-
-ADD https://github.com/assimp/assimp/archive/refs/tags/$ASSIMP_VERSION.tar.gz /assimp-src.tar.gz
+RUN ASSIMP_VERSION=${ASSIMP_VERSION:-$(jq -r '.assimp.version' /versions.json)} \
+  && wget -q https://github.com/assimp/assimp/archive/refs/tags/$ASSIMP_VERSION.tar.gz -O /assimp-src.tar.gz
 
 RUN mkdir -p /assimp-src && tar -xzf /assimp-src.tar.gz -C /assimp-src --strip-components 1 && rm -rf /assimp-src.tar.gz
 
@@ -70,9 +74,8 @@ FROM base AS occt
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG OCCT_VERSION
-RUN [ -n "$OCCT_VERSION" ]
-
-ADD https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/$OCCT_VERSION.tar.gz /occt-src.tar.gz
+RUN OCCT_VERSION=${OCCT_VERSION:-$(jq -r '.occt.version' /versions.json)} \
+  && wget -q https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/$OCCT_VERSION.tar.gz -O /occt-src.tar.gz
 
 RUN mkdir -p /occt-src && tar -xzf /occt-src.tar.gz -C /occt-src --strip-components 1 && rm -rf /occt-src.tar.gz
 
@@ -108,9 +111,8 @@ FROM base AS draco
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG DRACO_VERSION
-RUN [ -n "$DRACO_VERSION" ]
-
-ADD https://github.com/google/draco/archive/refs/tags/$DRACO_VERSION.tar.gz /draco-src.tar.gz
+RUN DRACO_VERSION=${DRACO_VERSION:-$(jq -r '.draco.version' /versions.json)} \
+  && wget -q https://github.com/google/draco/archive/refs/tags/$DRACO_VERSION.tar.gz -O /draco-src.tar.gz
 
 RUN mkdir -p /draco-src && tar -xzf /draco-src.tar.gz -C /draco-src --strip-components 1 && rm -rf /draco-src.tar.gz
 
@@ -131,9 +133,8 @@ FROM base AS webp
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG WEBP_VERSION
-RUN [ -n "$WEBP_VERSION" ]
-
-ADD https://github.com/webmproject/libwebp/archive/refs/tags/$WEBP_VERSION.tar.gz /webp-src.tar.gz
+RUN WEBP_VERSION=${WEBP_VERSION:-$(jq -r '.webp.version' /versions.json)} \
+  && wget -q https://github.com/webmproject/libwebp/archive/refs/tags/$WEBP_VERSION.tar.gz -O /webp-src.tar.gz
 
 RUN mkdir -p /webp-src && tar -xzf /webp-src.tar.gz -C /webp-src --strip-components 1 && rm -rf /webp-src.tar.gz
 
@@ -161,9 +162,8 @@ FROM base AS webifc
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG WEBIFC_VERSION
-RUN [ -n "$WEBIFC_VERSION" ]
-
-ADD https://github.com/ThatOpen/engine_web-ifc/archive/refs/tags/$WEBIFC_VERSION.tar.gz /webifc-src.tar.gz
+RUN WEBIFC_VERSION=${WEBIFC_VERSION:-$(jq -r '.webifc.version' /versions.json)} \
+  && wget -q https://github.com/ThatOpen/engine_web-ifc/archive/refs/tags/$WEBIFC_VERSION.tar.gz -O /webifc-src.tar.gz
 
 RUN mkdir -p /webifc-src && tar -xzf /webifc-src.tar.gz -C /webifc-src --strip-components 1 && rm -rf /webifc-src.tar.gz
 
@@ -184,9 +184,8 @@ FROM base AS vtk
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG VTK_VERSION
-RUN [ -n "$VTK_VERSION" ]
-
-ADD https://gitlab.kitware.com/vtk/vtk/-/archive/$VTK_VERSION/vtk-$VTK_VERSION.tar.gz /vtk-src.tar.gz
+RUN VTK_VERSION=${VTK_VERSION:-$(jq -r '.vtk_commit_sha' /versions.json)} \
+  && wget -q https://gitlab.kitware.com/vtk/vtk/-/archive/$VTK_VERSION/vtk-$VTK_VERSION.tar.gz -O /vtk-src.tar.gz
 
 RUN mkdir -p /vtk-src && tar -xzf /vtk-src.tar.gz -C /vtk-src --strip-components 1 && rm -rf /vtk-src.tar.gz
 

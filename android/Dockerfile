@@ -17,6 +17,7 @@ ENV ANDROID_ARCH=$ANDROID_ARCH
 # Install dockerfile dependency
 RUN apt update && apt install -y \
       ca-certificates \
+      jq \
       libssl-dev \
       pkg-config \
       software-properties-common \
@@ -42,15 +43,17 @@ RUN mv android-ndk-$ANDROID_NDK /ndk
 # Copy toolchain
 COPY android-toolchain.cmake /
 
+# Copy F3D version.json
+ADD https://raw.githubusercontent.com/f3d-app/f3d/refs/heads/master/.github/workflows/versions.json /versions.json
+
 ######################################
 # openjph
 ######################################
 FROM base AS openjph
 
 ARG OPENJPH_VERSION
-RUN [ -n "$OPENJPH_VERSION" ]
-
-ADD https://github.com/aous72/openjph/archive/refs/tags/$OPENJPH_VERSION.tar.gz /openjph-src.tar.gz
+RUN OPENJPH_VERSION=${OPENJPH_VERSION:-$(jq -r '.openjph.version' /versions.json)} \
+  && wget -q https://github.com/aous72/openjph/archive/refs/tags/$OPENJPH_VERSION.tar.gz -O /openjph-src.tar.gz
 
 RUN mkdir -p /openjph-src && tar -xzf /openjph-src.tar.gz -C /openjph-src --strip-components 1 && rm -rf /openjph-src.tar.gz
 
@@ -71,9 +74,8 @@ RUN cmake --build /openjph-build --target install && rm -rf /openjph-src /openjp
 FROM openjph AS imath
 
 ARG IMATH_VERSION
-RUN [ -n "$IMATH_VERSION" ]
-
-ADD https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/$IMATH_VERSION.tar.gz /imath-src.tar.gz
+RUN IMATH_VERSION=${IMATH_VERSION:-$(jq -r '.imath.version' /versions.json)} \
+  && wget -q https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/$IMATH_VERSION.tar.gz -O /imath-src.tar.gz
 
 RUN mkdir -p /imath-src && tar -xzf /imath-src.tar.gz -C /imath-src --strip-components 1 && rm -rf /imath-src.tar.gz
 
@@ -92,9 +94,8 @@ RUN cmake --build /imath-build --target install && rm -rf /imath-src /imath-buil
 FROM imath AS alembic
 
 ARG ALEMBIC_VERSION
-RUN [ -n "$ALEMBIC_VERSION" ]
-
-ADD https://github.com/alembic/alembic/archive/refs/tags/$ALEMBIC_VERSION.tar.gz /alembic-src.tar.gz
+RUN ALEMBIC_VERSION=${ALEMBIC_VERSION:-$(jq -r '.alembic.version' /versions.json)} \
+  && wget -q https://github.com/alembic/alembic/archive/refs/tags/$ALEMBIC_VERSION.tar.gz -O /alembic-src.tar.gz
 
 RUN mkdir -p /alembic-src && tar -xzf /alembic-src.tar.gz -C /alembic-src --strip-components 1 && rm -rf /alembic-src.tar.gz
 
@@ -116,9 +117,8 @@ RUN cmake --build /alembic-build --target install && rm -rf /alembic-src /alembi
 FROM base AS assimp
 
 ARG ASSIMP_VERSION
-RUN [ -n "$ASSIMP_VERSION" ]
-
-ADD https://github.com/assimp/assimp/archive/refs/tags/$ASSIMP_VERSION.tar.gz /assimp-src.tar.gz
+RUN ASSIMP_VERSION=${ASSIMP_VERSION:-$(jq -r '.assimp.version' /versions.json)} \
+  && wget -q https://github.com/assimp/assimp/archive/refs/tags/$ASSIMP_VERSION.tar.gz -O /assimp-src.tar.gz
 
 RUN mkdir -p /assimp-src && tar -xzf /assimp-src.tar.gz -C /assimp-src --strip-components 1 && rm -rf /assimp-src.tar.gz
 
@@ -149,9 +149,8 @@ RUN cmake --build /assimp-build --target install && rm -rf /assimp-src /assimp-b
 FROM base AS occt
 
 ARG OCCT_VERSION
-RUN [ -n "$OCCT_VERSION" ]
-
-ADD https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/$OCCT_VERSION.tar.gz /occt-src.tar.gz
+RUN OCCT_VERSION=${OCCT_VERSION:-$(jq -r '.occt.version' /versions.json)} \
+  && wget -q https://github.com/Open-Cascade-SAS/OCCT/archive/refs/tags/$OCCT_VERSION.tar.gz -O /occt-src.tar.gz
 
 RUN mkdir -p /occt-src && tar -xzf /occt-src.tar.gz -C /occt-src --strip-components 1 && rm -rf /occt-src.tar.gz
 
@@ -182,9 +181,8 @@ FROM base AS draco
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG DRACO_VERSION
-RUN [ -n "$DRACO_VERSION" ]
-
-ADD https://github.com/google/draco/archive/refs/tags/$DRACO_VERSION.tar.gz /draco-src.tar.gz
+RUN DRACO_VERSION=${DRACO_VERSION:-$(jq -r '.draco.version' /versions.json)} \
+  && wget -q https://github.com/google/draco/archive/refs/tags/$DRACO_VERSION.tar.gz -O /draco-src.tar.gz
 
 RUN mkdir -p /draco-src && tar -xzf /draco-src.tar.gz -C /draco-src --strip-components 1 && rm -rf /draco-src.tar.gz
 
@@ -206,9 +204,8 @@ FROM imath AS openexr
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG OPENEXR_VERSION
-RUN [ -n "$OPENEXR_VERSION" ]
-
-ADD https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/$OPENEXR_VERSION.tar.gz /openexr-src.tar.gz
+RUN OPENEXR_VERSION=${OPENEXR_VERSION:-$(jq -r '.openexr.version' /versions.json)} \
+  && wget -q https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/$OPENEXR_VERSION.tar.gz -O /openexr-src.tar.gz
 
 RUN mkdir -p /openexr-src && tar -xzf /openexr-src.tar.gz -C /openexr-src --strip-components 1 && rm -rf /openexr-src.tar.gz
 
@@ -231,9 +228,8 @@ FROM base AS webp
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG WEBP_VERSION
-RUN [ -n "$WEBP_VERSION" ]
-
-ADD https://github.com/webmproject/libwebp/archive/refs/tags/$WEBP_VERSION.tar.gz /webp-src.tar.gz
+RUN WEBP_VERSION=${WEBP_VERSION:-$(jq -r '.webp.version' /versions.json)} \
+  && wget -q https://github.com/webmproject/libwebp/archive/refs/tags/$WEBP_VERSION.tar.gz -O /webp-src.tar.gz
 
 RUN mkdir -p /webp-src && tar -xzf /webp-src.tar.gz -C /webp-src --strip-components 1 && rm -rf /webp-src.tar.gz
 
@@ -264,9 +260,8 @@ FROM base AS webifc
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG WEBIFC_VERSION
-RUN [ -n "$WEBIFC_VERSION" ]
-
-ADD https://github.com/ThatOpen/engine_web-ifc/archive/refs/tags/$WEBIFC_VERSION.tar.gz /webifc-src.tar.gz
+RUN WEBIFC_VERSION=${WEBIFC_VERSION:-$(jq -r '.webifc.version' /versions.json)} \
+  && wget -q https://github.com/ThatOpen/engine_web-ifc/archive/refs/tags/$WEBIFC_VERSION.tar.gz -O /webifc-src.tar.gz
 
 RUN mkdir -p /webifc-src && tar -xzf /webifc-src.tar.gz -C /webifc-src --strip-components 1 && rm -rf /webifc-src.tar.gz
 
@@ -288,9 +283,8 @@ RUN cmake --build /webifc-build --target install && rm -rf /webifc-src /webifc-b
 FROM base AS vtk
 
 ARG VTK_VERSION
-RUN [ -n "$VTK_VERSION" ]
-
-ADD https://gitlab.kitware.com/vtk/vtk/-/archive/$VTK_VERSION/vtk-$VTK_VERSION.tar.gz /vtk-src.tar.gz
+RUN VTK_VERSION=${VTK_VERSION:-$(jq -r '.vtk_commit_sha' /versions.json)} \
+  && wget -q https://gitlab.kitware.com/vtk/vtk/-/archive/$VTK_VERSION/vtk-$VTK_VERSION.tar.gz -O /vtk-src.tar.gz
 
 RUN mkdir -p /vtk-src && tar -xzf /vtk-src.tar.gz -C /vtk-src --strip-components 1 && rm -rf /vtk-src.tar.gz
 

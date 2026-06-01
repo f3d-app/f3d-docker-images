@@ -262,6 +262,7 @@ RUN cmake -S /blosc-src -B /blosc-build \
   -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -DBUILD_BENCHMARKS=OFF \
   -DBUILD_FUZZERS=OFF \
   -DBUILD_SHARED=OFF \

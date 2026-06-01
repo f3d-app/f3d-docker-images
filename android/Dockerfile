@@ -283,9 +283,12 @@ RUN OPENVDB_VERSION=${OPENVDB_VERSION:-$(jq -r '.openvdb.version' /versions.json
 
 RUN mkdir -p /openvdb-src && tar -xzf /openvdb-src.tar.gz -C /openvdb-src --strip-components 1 && rm -rf /openvdb-src.tar.gz
 
+# https://github.com/AcademySoftwareFoundation/openvdb/issues/1740
+# https://github.com/AcademySoftwareFoundation/openvdb/issues/1741
 COPY openvdb-remove-not-needed-cmake-modules.patch /
 RUN patch -p1 -d /openvdb-src < /openvdb-remove-not-needed-cmake-modules.patch
 
+# https://github.com/AcademySoftwareFoundation/openvdb/issues/1741
 COPY openvdb-fix-visible-dependencies-link.patch /
 RUN patch -p1 -d /openvdb-src < /openvdb-fix-visible-dependencies-link.patch
 
@@ -323,6 +326,7 @@ RUN OPENUSD_VERSION=${OPENUSD_VERSION:-$(jq -r '.usd.version' /versions.json)} \
 
 RUN mkdir -p /openusd-src && tar -xzf /openusd-src.tar.gz -C /openusd-src --strip-components 1 && rm -rf /openusd-src.tar.gz
 
+# https://github.com/PixarAnimationStudios/OpenUSD/issues/4093
 COPY openusd-fix-compile.patch /
 RUN patch -p1 -d /openusd-src < /openusd-fix-compile.patch
 
@@ -417,9 +421,6 @@ RUN VTK_VERSION=${VTK_VERSION:-$(jq -r '.vtk_commit_sha' /versions.json)} \
 
 RUN mkdir -p /vtk-src && tar -xzf /vtk-src.tar.gz -C /vtk-src --strip-components 1 && rm -rf /vtk-src.tar.gz
 
-COPY vtk-netcdf-mremap.patch /
-RUN patch -p1 -d /vtk-src < /vtk-netcdf-mremap.patch
-
 COPY --from=openvdb /depends /depends
 
 # OPENVDB_USE_STATIC_LIBS is needed because FindOpenVDB.cmake is not smart enough to find it out itself
@@ -432,7 +433,7 @@ RUN cmake -S /vtk-src -B /vtk-build \
       -DANDROID_NDK=/ndk \
       -DCMAKE_BUILD_TYPE=Release \
       -DVTK_ANDROID_BUILD=ON \
-      -DVTK_ANDROID_USER_OPTIONS="-DCMAKE_FIND_ROOT_PATH:PATH=/depends;${OPENVDB_ADDITIONAL_OPTIONS};-DVTK_MODULE_ENABLE_VTK_IOInfovis=NO;-DVTK_MODULE_ENABLE_VTK_IOOpenVDB=YES;-DVTK_MODULE_ENABLE_VTK_IOHDF=YES;-DVTK_MODULE_ENABLE_VTK_IOExodus=YES;-DVTK_MODULE_ENABLE_VTK_IONetCDF=YES;-DVTK_MODULE_ENABLE_VTK_RenderingLabel=NO;-DVTK_MODULE_ENABLE_VTK_TestingRendering=NO;-DVTK_MODULE_ENABLE_VTK_RenderingGridAxes=YES"
+      -DVTK_ANDROID_USER_OPTIONS="-DCMAKE_FIND_ROOT_PATH:PATH=/depends;${OPENVDB_ADDITIONAL_OPTIONS};-DHAVE_MREMAP=0;-DVTK_MODULE_ENABLE_VTK_IOInfovis=NO;-DVTK_MODULE_ENABLE_VTK_IOOpenVDB=YES;-DVTK_MODULE_ENABLE_VTK_IOHDF=YES;-DVTK_MODULE_ENABLE_VTK_IOExodus=YES;-DVTK_MODULE_ENABLE_VTK_IONetCDF=YES;-DVTK_MODULE_ENABLE_VTK_RenderingLabel=NO;-DVTK_MODULE_ENABLE_VTK_TestingRendering=NO;-DVTK_MODULE_ENABLE_VTK_RenderingGridAxes=YES"
 
 RUN cmake --build /vtk-build && rm -rf /vtk-src
 

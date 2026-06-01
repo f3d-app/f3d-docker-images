@@ -316,6 +316,7 @@ RUN cmake --build /openvdb-build --target install && rm -rf /openvdb-src /openvd
 ######################################
 FROM base AS openusd
 
+ARG ANDROID_ARCH
 ARG OPENUSD_VERSION
 RUN OPENUSD_VERSION=${OPENUSD_VERSION:-$(jq -r '.usd.version' /versions.json)} \
   && wget -q https://github.com/PixarAnimationStudios/OpenUSD/archive/refs/tags/$OPENUSD_VERSION.tar.gz -O /openusd-src.tar.gz
@@ -327,25 +328,29 @@ RUN patch -p1 -d /openusd-src < /openusd-fix-compile.patch
 
 COPY --from=tbb /depends /depends
 
-RUN cmake -S /openusd-src -B /openusd-build \
-  -DBUILD_TESTING=OFF \
-  -DBUILD_SHARED_LIBS=OFF \
-  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
-  -DCMAKE_PREFIX_PATH:PATH=/depends \
-  -DPXR_BUILD_EXAMPLES:BOOL=OFF \
-  -DPXR_BUILD_IMAGING:BOOL=OFF \
-  -DPXR_BUILD_MONOLITHIC:BOOL=ON \
-  -DPXR_BUILD_TESTS:BOOL=OFF \
-  -DPXR_BUILD_TUTORIALS:BOOL=OFF \
-  -DPXR_BUILD_USD_TOOLS:BOOL=OFF \
-  -DPXR_ENABLE_GL_SUPPORT:BOOL=OFF \
-  -DPXR_ENABLE_PRECOMPILED_HEADERS:BOOL=OFF \
-  -DPXR_ENABLE_PYTHON_SUPPORT:BOOL=OFF \
-  -DPXR_INSTALL_LOCATION:STRING=../lib/usd
+RUN if [ "$ANDROID_ARCH" != "x86" ] && [ "$ANDROID_ARCH" != "armeabi-v7a" ]; then \
+  cmake -S /openusd-src -B /openusd-build \
+    -DBUILD_TESTING=OFF \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+    -DCMAKE_PREFIX_PATH:PATH=/depends \
+    -DPXR_BUILD_EXAMPLES:BOOL=OFF \
+    -DPXR_BUILD_IMAGING:BOOL=OFF \
+    -DPXR_BUILD_MONOLITHIC:BOOL=ON \
+    -DPXR_BUILD_TESTS:BOOL=OFF \
+    -DPXR_BUILD_TUTORIALS:BOOL=OFF \
+    -DPXR_BUILD_USD_TOOLS:BOOL=OFF \
+    -DPXR_ENABLE_GL_SUPPORT:BOOL=OFF \
+    -DPXR_ENABLE_PRECOMPILED_HEADERS:BOOL=OFF \
+    -DPXR_ENABLE_PYTHON_SUPPORT:BOOL=OFF \
+    -DPXR_INSTALL_LOCATION:STRING=../lib/usd; \
+  fi
 
-RUN cmake --build /openusd-build --target install && rm -rf /openusd-src /openusd-build
+RUN if [ "$ANDROID_ARCH" != "x86" ] && [ "$ANDROID_ARCH" != "armeabi-v7a" ]; then \
+  cmake --build /openusd-build --target install && rm -rf /openusd-src /openusd-build; \
+  fi
 
 ######################################
 # WebP

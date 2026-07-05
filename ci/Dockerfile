@@ -12,9 +12,10 @@ RUN apt update && apt install -y \
 
 # Install VTK and others build dependency
 # file is needed for the superbuild
+# libpng-dev is needed for clip
+# bison, byacc, flex, pkg-config, ninja-build and libzstd-dev are needed for mesa
 RUN apt update && apt install -y \
       file \
-      libosmesa6-dev \
       libgl1-mesa-dev \
       libglfw3-dev \
       libglu1-mesa \
@@ -22,7 +23,13 @@ RUN apt update && apt install -y \
       libx11-dev \
       libxcursor-dev \
       libxt-dev \
-      libpng-dev # clip
+      libpng-dev \
+      bison \
+      byacc \
+      flex \
+      pkg-config \
+      ninja-build \
+      libzstd-dev
 
 # Install F3D build and test dependency
 RUN apt update && apt install -y \

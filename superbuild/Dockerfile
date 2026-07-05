@@ -37,6 +37,7 @@ RUN apt update && apt install -y \
       gzip
 
 # Install testing dependency
+# TODO: remove when https://github.com/f3d-app/f3d-superbuild/pull/343 is merged
 RUN apt update && apt install -y \
       libosmesa6-dev
 

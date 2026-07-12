@@ -12,12 +12,10 @@ RUN apt update && apt install -y \
       wget
 
 # Install CI tools
-# Pinned chromium because of https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1141488
 RUN apt update && apt install -y \
       git \
       git-lfs \
-      chromium=147.0.7727.137-1~deb13u1 \
-      chromium-common=147.0.7727.137-1~deb13u1 \
+      chromium \
       xvfb \
       dbus-x11
 

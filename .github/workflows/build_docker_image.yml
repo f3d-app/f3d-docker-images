@@ -160,7 +160,7 @@ jobs:
         build-args: |
           ANDROID_API=28
           ANDROID_ARCH=${{ matrix.arch }}
-          ANDROID_NDK=r27d
+          ANDROID_NDK=r29
           CMAKE_BUILD_PARALLEL_LEVEL=4
           VTK_VERSION=${{ env.F3D_VTK_VERSION }}
 

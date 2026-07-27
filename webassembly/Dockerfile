@@ -20,7 +20,7 @@ RUN apt update && apt install -y \
       dbus-x11
 
 # Install Emscripten SDK
-ADD https://github.com/emscripten-core/emsdk/archive/refs/tags/4.0.10.tar.gz /emsdk.tar.gz
+ADD https://github.com/emscripten-core/emsdk/archive/refs/tags/6.0.4.tar.gz /emsdk.tar.gz
 
 RUN mkdir -p /emsdk && tar -xzf /emsdk.tar.gz -C /emsdk --strip-components 1 && rm -rf /emsdk.tar.gz
 

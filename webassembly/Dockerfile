@@ -47,6 +47,10 @@ RUN ASSIMP_VERSION=${ASSIMP_VERSION:-$(jq -r '.assimp.version' /versions.json)} 
 
 RUN mkdir -p /assimp-src && tar -xzf /assimp-src.tar.gz -C /assimp-src --strip-components 1 && rm -rf /assimp-src.tar.gz
 
+# https://github.com/assimp/assimp/pull/6753
+COPY assimp-fix-amf-leak.patch /
+RUN patch -p1 -d /assimp-src < /assimp-fix-amf-leak.patch
+
 RUN cmake -S /assimp-src -B /assimp-build \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_BUILD_TYPE=Release \

@@ -124,6 +124,10 @@ RUN ASSIMP_VERSION=${ASSIMP_VERSION:-$(jq -r '.assimp.version' /versions.json)} 
 
 RUN mkdir -p /assimp-src && tar -xzf /assimp-src.tar.gz -C /assimp-src --strip-components 1 && rm -rf /assimp-src.tar.gz
 
+# https://github.com/assimp/assimp/pull/6753
+COPY assimp-fix-amf-leak.patch /
+RUN patch -p1 -d /assimp-src < /assimp-fix-amf-leak.patch
+
 RUN cmake -S /assimp-src -B /assimp-build \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
@@ -132,6 +136,7 @@ RUN cmake -S /assimp-src -B /assimp-build \
   -DASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=OFF \
   -DASSIMP_BUILD_ASSIMP_TOOLS=OFF \
   -DASSIMP_BUILD_3MF_IMPORTER=ON \
+  -DASSIMP_BUILD_AMF_IMPORTER=ON \
   -DASSIMP_BUILD_COLLADA_IMPORTER=ON \
   -DASSIMP_BUILD_DXF_IMPORTER=ON \
   -DASSIMP_BUILD_FBX_IMPORTER=ON \

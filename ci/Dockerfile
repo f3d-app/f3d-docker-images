@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 # Install dockerfile dependency
 RUN apt update && apt install -y \
@@ -8,7 +8,8 @@ RUN apt update && apt install -y \
 # Install generic build dependency
 RUN apt update && apt install -y \
       build-essential \
-      clang
+      clang \
+      cmake
 
 # Install VTK and others build dependency
 # file is needed for the superbuild
@@ -55,8 +56,3 @@ RUN apt update && apt install -y \
       xvfb \
       curl \
       jq
-
-# Install up-to-date needed packages
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ noble main'
-RUN apt update && apt install -y cmake=3.31.6-0kitware1ubuntu24.04.1 cmake-data=3.31.6-0kitware1ubuntu24.04.1

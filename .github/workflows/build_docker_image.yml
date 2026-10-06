@@ -19,7 +19,36 @@ on:
 
 jobs:
 
+  changes:
+    runs-on: ubuntu-latest
+    name: Detect changes
+    outputs:
+      ci: ${{ steps.filter.outputs.ci }}
+      wasm: ${{ steps.filter.outputs.wasm }}
+      android: ${{ steps.filter.outputs.android }}
+      superbuild: ${{ steps.filter.outputs.superbuild }}
+      wheels: ${{ steps.filter.outputs.wheels }}
+    steps:
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            ci:
+              - 'ci/**'
+            wasm:
+              - 'webassembly/**'
+            android:
+              - 'android/**'
+            superbuild:
+              - 'superbuild/**'
+            wheels:
+              - 'wheels-manylinux/**'
+
   build_f3d-ci:
+    needs: changes
+    name: Build CI
+    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.ci == 'true' }}
     runs-on: ubuntu-latest
     steps:
 
@@ -41,6 +70,9 @@ jobs:
         context: "{{defaultContext}}:ci"
 
   build_f3d-wasm:
+    name: Build WebAssembly
+    needs: changes
+    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.wasm == 'true' }}
     runs-on: ubuntu-latest
     steps:
 
@@ -99,6 +131,9 @@ jobs:
           VTK_VERSION=${{ env.F3D_VTK_VERSION }}
 
   build_f3d-android:
+    needs: changes
+    name: Build Android
+    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.android == 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -165,6 +200,9 @@ jobs:
           VTK_VERSION=${{ env.F3D_VTK_VERSION }}
 
   build_f3d-superbuild-ci:
+    needs: changes
+    name: Build Superbuild CI
+    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.superbuild == 'true' }}
     runs-on: ubuntu-latest
     steps:
 
@@ -186,6 +224,9 @@ jobs:
         context: "{{defaultContext}}:superbuild"
 
   build_f3d-wheels-manylinux-ci:
+    needs: changes
+    name: Build Wheels Manylinux
+    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.wheels == 'true' }}
     runs-on: ubuntu-latest
     steps:
 

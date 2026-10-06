@@ -30,7 +30,8 @@ RUN apt update && apt install -y \
       flex \
       pkg-config \
       ninja-build \
-      libzstd-dev
+      libzstd-dev \
+      f3d
 
 # Install F3D build and test dependency
 RUN apt update && apt install -y \

@@ -20,7 +20,8 @@ on:
 jobs:
 
   changes:
-    if: ${{ github.event_name == 'pull_request' }}
+    # TODO: revert
+    if: ${{ github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     name: Detect changes
     outputs:

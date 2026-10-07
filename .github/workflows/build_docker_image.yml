@@ -74,7 +74,11 @@ jobs:
     name: Build WebAssembly
     needs: changes
     if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.wasm == 'true') }}
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+    runs-on: ubuntu-26.04${{ matrix.platform == 'linux/amd64' && '' || '-arm' }}
     steps:
 
     - name: Login to GitHub Container Registry
@@ -125,9 +129,11 @@ jobs:
       uses: docker/build-push-action@v7
       with:
         push: ${{ github.ref == 'refs/heads/main' }}
-        platforms: linux/amd64,linux/arm64
+        platforms: ${{ matrix.platform }}
         tags: ghcr.io/f3d-app/f3d-wasm:${{ env.F3D_DOCKER_TIMESTAMP }}, ghcr.io/f3d-app/f3d-wasm:${{ env.F3D_DOCKER_TAG }}
         context: "{{defaultContext}}:webassembly"
+        cache-from: type=gha,scope=wasm-${{ matrix.platform }}
+        cache-to: type=gha,mode=max,scope=wasm-${{ matrix.platform }}
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
           VTK_VERSION=${{ env.F3D_VTK_VERSION }}

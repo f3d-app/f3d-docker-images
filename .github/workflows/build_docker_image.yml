@@ -74,7 +74,7 @@ jobs:
   build_f3d-wasm:
     name: Build WebAssembly
     needs: changes
-    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.wasm == 'true' }}
+    if: ${{ always() && (github.event_name == 'pull_request' || needs.changes.outputs.wasm == 'true') }}
     runs-on: ubuntu-latest
     steps:
 

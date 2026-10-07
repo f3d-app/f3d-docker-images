@@ -49,7 +49,7 @@ jobs:
   build_f3d-ci:
     needs: changes
     name: Build CI
-    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.ci == 'true' }}
+    if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.ci == 'true') }}
     runs-on: ubuntu-latest
     steps:
 
@@ -73,7 +73,7 @@ jobs:
   build_f3d-wasm:
     name: Build WebAssembly
     needs: changes
-    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.wasm == 'true' }}
+    if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.wasm == 'true') }}
     runs-on: ubuntu-latest
     steps:
 
@@ -134,7 +134,7 @@ jobs:
   build_f3d-android:
     needs: changes
     name: Build Android
-    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.android == 'true' }}
+    if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.android == 'true') }}
     strategy:
       fail-fast: false
       matrix:
@@ -203,7 +203,7 @@ jobs:
   build_f3d-superbuild-ci:
     needs: changes
     name: Build Superbuild CI
-    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.superbuild == 'true' }}
+    if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.superbuild == 'true') }}
     runs-on: ubuntu-latest
     steps:
 
@@ -227,7 +227,7 @@ jobs:
   build_f3d-wheels-manylinux-ci:
     needs: changes
     name: Build Wheels Manylinux
-    if: ${{ github.event_name != 'pull_request' || needs.changes.outputs.wheels == 'true' }}
+    if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.wheels == 'true') }}
     runs-on: ubuntu-latest
     steps:
 

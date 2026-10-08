@@ -1,4 +1,4 @@
-FROM debian:stable-slim AS base
+FROM --platform=$TARGETPLATFORM debian:stable-slim AS base
 
 # Install generic build dependency
 RUN apt update && apt install -y \

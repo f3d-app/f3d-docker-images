@@ -78,7 +78,7 @@ jobs:
       fail-fast: false
       matrix:
         platform: [linux/amd64, linux/arm64]
-    runs-on: ubuntu-26.04${{ matrix.platform == 'linux/amd64' && '' || '-arm' }}
+    runs-on: ubuntu-26.04${{ matrix.platform == 'linux/arm64' && '-arm' || null }}
     steps:
 
     - name: Login to GitHub Container Registry

@@ -77,33 +77,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [assimp, occt, draco, webp, webifc, vtk]
+        target: [assimp, occt, draco, webp, webifc]
         arch: [amd64, arm64]
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
-
-    - name: Recover versions.json to parse
-      working-directory: ${{github.workspace}}
-      shell: bash
-      run: curl -s ${{ github.event.inputs.versions_file_url || 'https://raw.githubusercontent.com/f3d-app/f3d/master/.github/workflows/versions.json' }} > ./versions.json
-
-    - name: Recover VTK version
-      id: vtk_ver
-      uses: f3d-app/extract-version-action@main
-      with:
-        file: ./versions.json
-        special_name: vtk_commit_sha
-
-    - name: Check VTK version override
-      shell: bash
-      run: |
-        vtk_ver=${{ steps.vtk_ver.outputs.extract }}
-        vtk_ver_over=${{ github.event.inputs.vtk_version_override }}
-        [ -z $vtk_ver_over ] || vtk_ver=$vtk_ver_over
-        echo "F3D_VTK_VERSION=$vtk_ver" >> $GITHUB_ENV
 
     - name: Build dependency
       uses: docker/build-push-action@v7
@@ -115,7 +95,6 @@ jobs:
         cache-to: type=local,dest=${{ runner.temp }}/wasm-cache,mode=max
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
-          VTK_VERSION=${{ env.F3D_VTK_VERSION }}
 
     - name: Upload build cache
       uses: actions/upload-artifact@v4
@@ -200,8 +179,6 @@ jobs:
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-webp-arm64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-webifc-amd64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-webifc-arm64
-          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-vtk-amd64
-          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-vtk-arm64
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
           VTK_VERSION=${{ env.F3D_VTK_VERSION }}

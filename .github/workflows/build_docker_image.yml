@@ -80,17 +80,7 @@ jobs:
         target: [assimp, occt, draco, webp, webifc, vtk]
         arch: [amd64, arm64]
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
-    permissions:
-      contents: read
-      packages: write
     steps:
-
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v4
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
@@ -122,21 +112,31 @@ jobs:
         platforms: linux/${{ matrix.arch }}
         target: ${{ matrix.target }}
         context: "{{defaultContext}}:webassembly"
-        cache-from: type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-${{ matrix.target }}-${{ matrix.arch }}
-        cache-to: type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-${{ matrix.target }}-${{ matrix.arch }},mode=max,image-manifest=true,oci-mediatypes=true
+        cache-to: type=local,dest=${{ runner.temp }}/wasm-cache,mode=max
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
           VTK_VERSION=${{ env.F3D_VTK_VERSION }}
+
+    - name: Upload build cache
+      uses: actions/upload-artifact@v4
+      with:
+        name: wasm-cache-${{ matrix.target }}-${{ matrix.arch }}
+        path: ${{ runner.temp }}/wasm-cache
+        compression-level: 0
+        overwrite: true
 
   build_f3d-wasm:
     name: Build WebAssembly
     needs: build_f3d-wasm-targets
     if: ${{ always() && needs.build_f3d-wasm-targets.result == 'success' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
     steps:
+
+    - name: Download build caches
+      uses: actions/download-artifact@v4
+      with:
+        pattern: wasm-cache-*
+        path: ${{ runner.temp }}/wasm-cache
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v4
@@ -193,18 +193,18 @@ jobs:
         tags: ghcr.io/f3d-app/f3d-wasm:${{ env.F3D_DOCKER_TIMESTAMP }}, ghcr.io/f3d-app/f3d-wasm:${{ env.F3D_DOCKER_TAG }}
         context: "{{defaultContext}}:webassembly"
         cache-from: |
-          type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-assimp-amd64
-          type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-assimp-arm64
-          type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-occt-amd64
-          type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-occt-arm64
-          type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-draco-amd64
-          type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-draco-arm64
-          type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-webp-amd64
-          type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-webp-arm64
-          type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-webifc-amd64
-          type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-webifc-arm64
-          type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-vtk-amd64
-          type=registry,ref=ghcr.io/f3d-app/f3d-wasm:cache-vtk-arm64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-assimp-amd64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-assimp-arm64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-occt-amd64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-occt-arm64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-draco-amd64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-draco-arm64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-webp-amd64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-webp-arm64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-webifc-amd64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-webifc-arm64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-vtk-amd64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-vtk-arm64
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
           VTK_VERSION=${{ env.F3D_VTK_VERSION }}

@@ -80,6 +80,9 @@ jobs:
         target: [assimp, occt, draco, webp, webifc, vtk]
         arch: [amd64, arm64]
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    permissions:
+      contents: read
+      packages: write
     steps:
 
     - name: Login to GitHub Container Registry
@@ -120,7 +123,7 @@ jobs:
         target: ${{ matrix.target }}
         context: "{{defaultContext}}:webassembly"
         cache-from: type=registry,ref=ghcr.io/f3d-app/f3d-wasm-cache:${{ matrix.target }}-${{ matrix.arch }}
-        cache-to: type=registry,ref=ghcr.io/f3d-app/f3d-wasm-cache:${{ matrix.target }}-${{ matrix.arch }},mode=max,image-manifest=true,oci-mediatypes=true,ignore-error=true
+        cache-to: type=registry,ref=ghcr.io/f3d-app/f3d-wasm-cache:${{ matrix.target }}-${{ matrix.arch }},mode=max,image-manifest=true,oci-mediatypes=true
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
           VTK_VERSION=${{ env.F3D_VTK_VERSION }}
@@ -130,6 +133,9 @@ jobs:
     needs: build_f3d-wasm-targets
     if: ${{ always() && needs.build_f3d-wasm-targets.result == 'success' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
 
     - name: Login to GitHub Container Registry

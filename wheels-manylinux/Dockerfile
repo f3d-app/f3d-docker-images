@@ -7,4 +7,5 @@ RUN yum -y update && yum install -y \
   git-lfs              \
   mesa-dri-drivers     \
   mesa-libEGL-devel    \
+  perl                 \
   xorg-x11-server-Xvfb

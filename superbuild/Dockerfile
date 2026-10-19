@@ -13,7 +13,8 @@ RUN apt update && apt install -y \
 
 # Install generic build dependency
 RUN apt update && apt install -y \
-      build-essential
+      build-essential \
+      perl
 
 # Install VTK build dependency
 RUN apt update && apt install -y \

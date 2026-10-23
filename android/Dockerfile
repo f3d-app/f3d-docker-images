@@ -1,7 +1,8 @@
-FROM ubuntu:24.04 AS base
+FROM ubuntu:26.04 AS base
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ENV CMAKE_BUILD_PARALLEL_LEVEL=$CMAKE_BUILD_PARALLEL_LEVEL
+ENV CMAKE_POLICY_VERSION_MINIMUM=3.5
 
 ARG ANDROID_NDK
 RUN [ -n "$ANDROID_NDK" ]
@@ -17,6 +18,7 @@ ENV ANDROID_ARCH=$ANDROID_ARCH
 # Install dockerfile dependency
 RUN apt update && apt install -y \
       ca-certificates \
+      cmake \
       jq \
       libssl-dev \
       pkg-config \
@@ -29,11 +31,6 @@ RUN apt update && apt install -y \
       default-jdk \
       git \
       unzip
-
-# Install up-to-date needed packages
-RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
-RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ noble main'
-RUN apt update && apt install -y cmake=3.31.6-0kitware1ubuntu24.04.1 cmake-data=3.31.6-0kitware1ubuntu24.04.1
 
 # Install NDK
 RUN wget https://dl.google.com/android/repository/android-ndk-$ANDROID_NDK-linux.zip

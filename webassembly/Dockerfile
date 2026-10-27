@@ -36,9 +36,56 @@ ENV CXXFLAGS=-fwasm-exceptions
 ADD https://raw.githubusercontent.com/f3d-app/f3d/refs/heads/master/.github/workflows/versions.json /versions.json
 
 ######################################
+# Zlib
+######################################
+FROM base AS zlib
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG ZLIB_VERSION
+RUN ZLIB_VERSION=${ZLIB_VERSION:-$(jq -r '.zlib.version' /versions.json)} \
+  && wget -q https://github.com/madler/zlib/archive/refs/tags/$ZLIB_VERSION.tar.gz -O /zlib-src.tar.gz
+
+RUN mkdir -p /zlib-src && tar -xzf /zlib-src.tar.gz -C /zlib-src --strip-components 1 && rm -rf /zlib-src.tar.gz
+
+RUN cmake -S /zlib-src -B /zlib-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends
+
+RUN cmake --build /zlib-build --target install && rm -rf /zlib-src /zlib-build
+
+RUN rm -rf /depends/lib/libz.so*
+
+######################################
+# LZ4
+######################################
+FROM base AS lz4
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG LZ4_VERSION=v1.10.0
+RUN LZ4_VERSION=${LZ4_VERSION:-$(jq -r '.lz4.version' /versions.json)} \
+  && wget -q https://github.com/lz4/lz4/archive/refs/tags/$LZ4_VERSION.tar.gz -O /lz4-src.tar.gz
+
+RUN mkdir -p /lz4-src && tar -xzf /lz4-src.tar.gz -C /lz4-src --strip-components 1 && rm -rf /lz4-src.tar.gz
+
+RUN cmake -S /lz4-src/build/cmake -B /lz4-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DBUILD_STATIC_LIBS=ON \
+  -DBUILD_TESTING:BOOL=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DCMAKE_INSTALL_LIBDIR:PATH=lib \
+  -DLZ4_BUILD_CLI:BOOL=OFF \
+  -DLZ4_BUILD_LEGACY_LZ4C:BOOL=OFF
+
+RUN cmake --build /lz4-build --target install && rm -rf /lz4-src /lz4-build
+
+######################################
 # Assimp
 ######################################
 FROM base AS assimp
+
+COPY --from=zlib /depends /depends
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG ASSIMP_VERSION
@@ -55,6 +102,7 @@ RUN cmake -S /assimp-src -B /assimp-build \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DCMAKE_FIND_ROOT_PATH:PATH=/depends \
   -DASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT=OFF \
   -DASSIMP_BUILD_ASSIMP_TOOLS=OFF \
   -DASSIMP_BUILD_3MF_IMPORTER=ON \
@@ -66,11 +114,104 @@ RUN cmake -S /assimp-src -B /assimp-build \
   -DASSIMP_BUILD_X_IMPORTER=ON \
   -DASSIMP_BUILD_SAMPLES=OFF \
   -DASSIMP_BUILD_TESTS=OFF \
-  -DASSIMP_BUILD_ZLIB=ON \
+  -DASSIMP_BUILD_ZLIB=OFF \
   -DASSIMP_NO_EXPORT=ON \
   -DASSIMP_WARNINGS_AS_ERRORS=OFF
 
 RUN cmake --build /assimp-build --target install && rm -rf /assimp-src /assimp-build
+
+######################################
+# TBB
+######################################
+FROM base AS tbb
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG TBB_VERSION
+RUN TBB_VERSION=${TBB_VERSION:-$(jq -r '.tbb.version' /versions.json)} \
+  && wget -q https://github.com/oneapi-src/oneTBB/archive/refs/tags/$TBB_VERSION.tar.gz -O /tbb-src.tar.gz
+
+RUN mkdir -p /tbb-src && tar -xzf /tbb-src.tar.gz -C /tbb-src --strip-components 1 && rm -rf /tbb-src.tar.gz
+
+RUN cmake -S /tbb-src -B /tbb-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DTBB_STRICT=OFF \
+  -DTBB_TEST=OFF \
+  -DTBB4PY_BUILD=OFF
+
+RUN cmake --build /tbb-build --target install && rm -rf /tbb-src /tbb-build
+
+######################################
+# Blosc
+######################################
+FROM base AS blosc
+
+COPY --from=lz4 /depends /depends
+COPY --from=zlib /depends /depends
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG BLOSC_VERSION
+RUN BLOSC_VERSION=${BLOSC_VERSION:-$(jq -r '.blosc.version' /versions.json)} \
+  && wget -q https://github.com/Blosc/c-blosc/archive/refs/tags/$BLOSC_VERSION.tar.gz -O /blosc-src.tar.gz
+
+RUN mkdir -p /blosc-src && tar -xzf /blosc-src.tar.gz -C /blosc-src --strip-components 1 && rm -rf /blosc-src.tar.gz
+
+RUN cmake -S /blosc-src -B /blosc-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DBUILD_BENCHMARKS=OFF \
+  -DBUILD_FUZZERS=OFF \
+  -DBUILD_SHARED=OFF \
+  -DBUILD_STATIC=ON \
+  -DBUILD_TESTS=OFF \
+  -DPREFER_EXTERNAL_LZ4=ON \
+  -DPREFER_EXTERNAL_ZLIB=ON
+
+RUN cmake --build /blosc-build --target install && rm -rf /blosc-src /blosc-build
+
+######################################
+# OpenVDB
+######################################
+FROM base AS openvdb
+
+COPY --from=blosc /depends /depends
+COPY --from=tbb /depends /depends
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG OPENVDB_VERSION
+RUN OPENVDB_VERSION=${OPENVDB_VERSION:-$(jq -r '.openvdb.version' /versions.json)} \
+  && wget -q https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/$OPENVDB_VERSION.tar.gz -O /openvdb-src.tar.gz
+
+RUN mkdir -p /openvdb-src && tar -xzf /openvdb-src.tar.gz -C /openvdb-src --strip-components 1 && rm -rf /openvdb-src.tar.gz
+
+RUN rm /openvdb-src/cmake/FindTBB.cmake
+
+# Remove not needed CMake modules from OpenVDB
+COPY openvdb-remove-not-needed-cmake-modules.patch /
+RUN patch -p1 -d /openvdb-src < /openvdb-remove-not-needed-cmake-modules.patch
+
+COPY openvdb-fix-visible-dependencies-link.patch /
+RUN patch -p1 -d /openvdb-src < /openvdb-fix-visible-dependencies-link.patch
+
+RUN ls /depends/lib/cmake && cmake -S /openvdb-src -B /openvdb-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DCMAKE_INSTALL_LIBDIR:PATH=lib \
+  -DCMAKE_FIND_ROOT_PATH:PATH=/depends \
+  -DOPENVDB_BUILD_BINARIES=OFF \
+  -DOPENVDB_BUILD_VDB_PRINT:BOOL=OFF \
+  -DOPENVDB_CORE_SHARED=OFF \
+  -DOPENVDB_CORE_STATIC=ON \
+  -DOPENVDB_USE_DELAYED_LOADING=OFF \
+  -DUSE_BLOSC:BOOL=ON \
+  -DUSE_CCACHE:BOOL=OFF \
+  -DUSE_EXPLICIT_INSTANTIATION:BOOL=OFF \
+  -DUSE_ZLIB:BOOL=ON
+
+RUN cmake --build /openvdb-build --target install && rm -rf /openvdb-src /openvdb-build
 
 ######################################
 # OCCT
@@ -187,6 +328,8 @@ RUN cmake --build /webifc-build --target install && rm -rf /webifc-src /webifc-b
 ######################################
 FROM base AS vtk
 
+COPY --from=openvdb /depends /depends
+
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
 ARG VTK_VERSION
 RUN VTK_VERSION=${VTK_VERSION:-$(jq -r '.vtk_commit_sha' /versions.json)} \
@@ -198,6 +341,8 @@ RUN cmake -S /vtk-src -B /vtk-build \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DCMAKE_MODULE_PATH=/depends/lib/cmake/OpenVDB/ \
+  -DCMAKE_FIND_ROOT_PATH:PATH=/depends \
   -DVTK_BUILD_TESTING=OFF \
   -DVTK_ENABLE_LOGGING=OFF \
   -DVTK_ENABLE_REMOTE_MODULES=OFF \
@@ -222,6 +367,7 @@ RUN cmake -S /vtk-src -B /vtk-build \
   -DVTK_MODULE_ENABLE_VTK_IOImage=YES \
   -DVTK_MODULE_ENABLE_VTK_IOImport=YES \
   -DVTK_MODULE_ENABLE_VTK_IONetCDF=YES \
+  -DVTK_MODULE_ENABLE_VTK_IOOpenVDB=YES \
   -DVTK_MODULE_ENABLE_VTK_IOPLY=YES \
   -DVTK_MODULE_ENABLE_VTK_IOParallel=YES \
   -DVTK_MODULE_ENABLE_VTK_IOXML=YES \
@@ -235,6 +381,8 @@ RUN cmake -S /vtk-src -B /vtk-build \
   -DVTK_MODULE_ENABLE_VTK_RenderingOpenGL2=YES \
   -DVTK_MODULE_ENABLE_VTK_RenderingVolumeOpenGL2=YES \
   -DVTK_MODULE_ENABLE_VTK_TestingCore=YES \
+  -DVTK_MODULE_USE_EXTERNAL_VTK_lz4:BOOL=YES \
+  -DVTK_MODULE_USE_EXTERNAL_VTK_zlib:BOOL=YES \
   -DVTK_SMP_IMPLEMENTATION_TYPE=Sequential \
   -DVTK_VERSIONED_INSTALL=OFF
 

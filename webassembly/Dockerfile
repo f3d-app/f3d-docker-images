@@ -273,6 +273,39 @@ RUN EMSCRIPTEN=/ cmake -S /draco-src -B /draco-build \
 RUN cmake --build /draco-build --target install && rm -rf /draco-src /draco-build
 
 ######################################
+# OpenUSD
+######################################
+FROM base AS openusd
+
+COPY --from=tbb /depends /depends
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG USD_VERSION
+RUN USD_VERSION=${USD_VERSION:-$(jq -r '.usd.version' /versions.json)} \
+  && wget -q https://github.com/PixarAnimationStudios/OpenUSD/archive/refs/tags/$USD_VERSION.tar.gz -O /usd-src.tar.gz
+
+RUN mkdir -p /usd-src && tar -xzf /usd-src.tar.gz -C /usd-src --strip-components 1 && rm -rf /usd-src.tar.gz
+
+RUN cmake -S /usd-src -B /usd-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DCMAKE_FIND_ROOT_PATH:PATH=/depends \
+  -DPXR_BUILD_ALEMBIC_PLUGIN:BOOL=OFF \
+  -DPXR_BUILD_EMBREE_PLUGIN:BOOL=OFF \
+  -DPXR_BUILD_EXAMPLES:BOOL=OFF \
+  -DPXR_BUILD_IMAGING:BOOL=OFF \
+  -DPXR_BUILD_MONOLITHIC:BOOL=ON \
+  -DPXR_BUILD_TESTS:BOOL=OFF \
+  -DPXR_BUILD_TUTORIALS:BOOL=OFF \
+  -DPXR_BUILD_USD_IMAGING:BOOL=OFF \
+  -DPXR_BUILD_USD_TOOLS:BOOL=OFF \
+  -DPXR_ENABLE_PYTHON_SUPPORT:BOOL=OFF \
+  -DPXR_INSTALL_LOCATION:PATH=../lib/usd
+
+RUN cmake --build /usd-build --target install && rm -rf /usd-src /usd-build
+
+######################################
 # WebP
 ######################################
 FROM base AS webp
@@ -396,6 +429,7 @@ FROM base AS final
 COPY --from=assimp /depends /depends
 COPY --from=draco /depends /depends
 COPY --from=occt /depends /depends
+COPY --from=openusd /depends /depends
 COPY --from=vtk /depends /depends
 COPY --from=webp /depends /depends
 COPY --from=webifc /depends /depends

@@ -81,6 +81,49 @@ RUN cmake -S /lz4-src/build/cmake -B /lz4-build \
 RUN cmake --build /lz4-build --target install && rm -rf /lz4-src /lz4-build
 
 ######################################
+# IMath
+######################################
+FROM base AS imath
+
+ARG IMATH_VERSION
+RUN IMATH_VERSION=${IMATH_VERSION:-$(jq -r '.imath.version' /versions.json)} \
+  && wget -q https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/$IMATH_VERSION.tar.gz -O /imath-src.tar.gz
+
+RUN mkdir -p /imath-src && tar -xzf /imath-src.tar.gz -C /imath-src --strip-components 1 && rm -rf /imath-src.tar.gz
+
+RUN cmake -S /imath-src -B /imath-build \
+  -DBUILD_TESTING=OFF \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends
+
+RUN cmake --build /imath-build --target install && rm -rf /imath-src /imath-build
+
+######################################
+# Alembic
+######################################
+FROM base AS alembic
+
+ARG ALEMBIC_VERSION
+RUN ALEMBIC_VERSION=${ALEMBIC_VERSION:-$(jq -r '.alembic.version' /versions.json)} \
+  && wget -q https://github.com/alembic/alembic/archive/refs/tags/$ALEMBIC_VERSION.tar.gz -O /alembic-src.tar.gz
+
+RUN mkdir -p /alembic-src && tar -xzf /alembic-src.tar.gz -C /alembic-src --strip-components 1 && rm -rf /alembic-src.tar.gz
+
+COPY --from=imath /depends /depends
+
+RUN cmake -S /alembic-src -B /alembic-build \
+  -DALEMBIC_LIB_INSTALL_DIR=lib \
+  -DALEMBIC_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DCMAKE_FIND_ROOT_PATH:PATH=/depends \
+  -DUSE_BINARIES=OFF \
+  -DUSE_TESTS=OFF
+
+RUN cmake --build /alembic-build --target install && rm -rf /alembic-src /alembic-build
+
+######################################
 # Assimp
 ######################################
 FROM base AS assimp
@@ -426,6 +469,7 @@ RUN cmake --build /vtk-build --target install && rm -rf /vtk-src /vtk-build
 ######################################
 FROM base AS final
 
+COPY --from=alembic /depends /depends
 COPY --from=assimp /depends /depends
 COPY --from=draco /depends /depends
 COPY --from=occt /depends /depends

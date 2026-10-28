@@ -132,6 +132,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+    - name: Free disk space
+      uses: jlumbroso/free-disk-space@v2.0.0
+
     - name: Download build caches
       uses: actions/download-artifact@v8
       with:

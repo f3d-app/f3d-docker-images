@@ -190,10 +190,14 @@ jobs:
         tags: ghcr.io/f3d-app/f3d-wasm:${{ env.F3D_DOCKER_TIMESTAMP }}, ghcr.io/f3d-app/f3d-wasm:${{ env.F3D_DOCKER_TAG }}
         context: "{{defaultContext}}:webassembly"
         cache-from: |
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-alembic-amd64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-alembic-arm64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-assimp-amd64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-assimp-arm64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-occt-amd64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-occt-arm64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-openusd-amd64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-openusd-arm64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-draco-amd64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-draco-arm64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-webp-amd64

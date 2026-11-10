@@ -77,7 +77,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [assimp, alembic, draco, occt, openusd, webp, webifc, vtk]
+        target: [assimp, alembic, draco, meshopt, occt, openexr, openusd, webp, webifc, vtk]
         arch: [amd64, arm64]
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
@@ -197,10 +197,14 @@ jobs:
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-alembic-arm64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-assimp-amd64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-assimp-arm64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-meshopt-amd64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-meshopt-arm64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-occt-amd64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-occt-arm64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-openusd-amd64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-openusd-arm64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-openexr-amd64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-openexr-arm64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-draco-amd64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-draco-arm64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-webp-amd64

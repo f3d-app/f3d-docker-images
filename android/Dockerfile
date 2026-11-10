@@ -201,6 +201,26 @@ RUN cmake -S /draco-src -B /draco-build \
 RUN cmake --build /draco-build --target install && rm -rf /draco-src /draco-build
 
 ######################################
+# Meshopt
+######################################
+FROM base AS meshopt
+
+ARG MESHOPT_VERSION
+RUN MESHOPT_VERSION=${MESHOPT_VERSION:-$(jq -r '.meshoptimizer.version' /versions.json)} \
+  && wget -q https://github.com/zeux/meshoptimizer/archive/refs/tags/$MESHOPT_VERSION.tar.gz -O /meshopt-src.tar.gz
+
+RUN mkdir -p /meshopt-src && tar -xzf /meshopt-src.tar.gz -C /meshopt-src --strip-components 1 && rm -rf /meshopt-src.tar.gz
+
+RUN cmake -S /meshopt-src -B /meshopt-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends
+
+RUN cmake --build /meshopt-build --target install && rm -rf /meshopt-src /meshopt-build
+
+######################################
 # OpenEXR
 ######################################
 FROM base AS openexr

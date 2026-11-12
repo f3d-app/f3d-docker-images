@@ -81,6 +81,27 @@ RUN cmake -S /lz4-src/build/cmake -B /lz4-build \
 RUN cmake --build /lz4-build --target install && rm -rf /lz4-src /lz4-build
 
 ######################################
+# openjph
+######################################
+FROM base AS openjph
+
+ARG OPENJPH_VERSION
+RUN OPENJPH_VERSION=${OPENJPH_VERSION:-$(jq -r '.openjph.version' /versions.json)} \
+  && wget -q https://github.com/aous72/openjph/archive/refs/tags/$OPENJPH_VERSION.tar.gz -O /openjph-src.tar.gz
+
+RUN mkdir -p /openjph-src && tar -xzf /openjph-src.tar.gz -C /openjph-src --strip-components 1 && rm -rf /openjph-src.tar.gz
+
+RUN cmake -S /openjph-src -B /openjph-build \
+  -DBUILD_TESTING=OFF \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DOJPH_ENABLE_TIFF_SUPPORT=OFF \
+  -DUSE_TIFF=OFF
+
+RUN cmake --build /openjph-build --target install && rm -rf /openjph-src /openjph-build
+
+######################################
 # IMath
 ######################################
 FROM base AS imath
@@ -98,6 +119,31 @@ RUN cmake -S /imath-src -B /imath-build \
   -DCMAKE_INSTALL_PREFIX:PATH=/depends
 
 RUN cmake --build /imath-build --target install && rm -rf /imath-src /imath-build
+
+######################################
+# OpenEXR
+######################################
+FROM base AS openexr
+
+ARG OPENEXR_VERSION
+RUN OPENEXR_VERSION=${OPENEXR_VERSION:-$(jq -r '.openexr.version' /versions.json)} \
+  && wget -q https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/$OPENEXR_VERSION.tar.gz -O /openexr-src.tar.gz
+
+RUN mkdir -p /openexr-src && tar -xzf /openexr-src.tar.gz -C /openexr-src --strip-components 1 && rm -rf /openexr-src.tar.gz
+
+COPY --from=imath /depends /depends
+COPY --from=openjph /depends /depends
+
+RUN cmake -S /openexr-src -B /openexr-build \
+  -DBUILD_TESTING=OFF \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
+  -DOPENEXR_BUILD_EXAMPLES=OFF \
+  -DOPENEXR_BUILD_TOOLS=OFF \
+  -DOPENEXR_FORCE_INTERNAL_OPENJPH=OFF
+
+RUN cmake --build /openexr-build --target install && rm -rf /openexr-src /openexr-build
 
 ######################################
 # Alembic
@@ -316,6 +362,25 @@ RUN EMSCRIPTEN=/ cmake -S /draco-src -B /draco-build \
 RUN cmake --build /draco-build --target install && rm -rf /draco-src /draco-build
 
 ######################################
+# meshoptimizer
+######################################
+FROM base AS meshopt
+
+ARG CMAKE_BUILD_PARALLEL_LEVEL=8
+ARG MESHOPT_VERSION
+RUN MESHOPT_VERSION=${MESHOPT_VERSION:-$(jq -r '.meshoptimizer.version' /versions.json)} \
+  && wget -q https://github.com/zeux/meshoptimizer/archive/refs/tags/$MESHOPT_VERSION.tar.gz -O /meshopt-src.tar.gz
+
+RUN mkdir -p /meshopt-src && tar -xzf /meshopt-src.tar.gz -C /meshopt-src --strip-components 1 && rm -rf /meshopt-src.tar.gz
+
+RUN cmake -S /meshopt-src -B /meshopt-build \
+  -DBUILD_SHARED_LIBS=OFF \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX:PATH=/depends
+
+RUN cmake --build /meshopt-build --target install && rm -rf /meshopt-src /meshopt-build
+
+######################################
 # OpenUSD
 ######################################
 FROM base AS openusd
@@ -424,7 +489,6 @@ RUN cmake -S /vtk-src -B /vtk-build \
   -DVTK_ENABLE_LOGGING=OFF \
   -DVTK_ENABLE_REMOTE_MODULES=OFF \
   -DVTK_ENABLE_WRAPPING=OFF \
-  -DVTK_LEGACY_REMOVE=ON \
   -DVTK_GROUP_ENABLE_Imaging=DONT_WANT \
   -DVTK_GROUP_ENABLE_MPI=DONT_WANT \
   -DVTK_GROUP_ENABLE_Qt=DONT_WANT \
@@ -474,7 +538,9 @@ COPY --from=alembic /depends /depends
 COPY --from=assimp /depends /depends
 COPY --from=draco /depends /depends
 COPY --from=occt /depends /depends
+COPY --from=openexr /depends /depends
 COPY --from=openusd /depends /depends
+COPY --from=meshopt /depends /depends
 COPY --from=vtk /depends /depends
 COPY --from=webp /depends /depends
 COPY --from=webifc /depends /depends

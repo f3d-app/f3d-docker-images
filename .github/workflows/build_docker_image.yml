@@ -99,6 +99,7 @@ jobs:
         name: wasm-cache-base-${{ matrix.arch }}
         path: ${{ runner.temp }}/wasm-cache
         compression-level: 0
+        retention-days: 1
         overwrite: true
 
   build_f3d-wasm-targets:
@@ -113,14 +114,34 @@ jobs:
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
 
-    - name: Download build caches
+    - name: Download base build cache
       uses: actions/download-artifact@v8
       with:
-        pattern: wasm-cache-*
-        path: ${{ runner.temp }}/wasm-cache
+        name: wasm-cache-base-${{ matrix.arch }}
+        path: ${{ runner.temp }}/wasm-cache-base
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
+
+    - name: Recover versions.json to parse
+      working-directory: ${{github.workspace}}
+      shell: bash
+      run: curl -s ${{ github.event.inputs.versions_file_url || 'https://raw.githubusercontent.com/f3d-app/f3d/master/.github/workflows/versions.json' }} > ./versions.json
+
+    - name: Recover VTK version
+      id: vtk_ver
+      uses: f3d-app/extract-version-action@main
+      with:
+        file: ./versions.json
+        special_name: vtk_commit_sha
+
+    - name: Check VTK version override
+      shell: bash
+      run: |
+        vtk_ver=${{ steps.vtk_ver.outputs.extract }}
+        vtk_ver_over=${{ github.event.inputs.vtk_version_override }}
+        [ -z $vtk_ver_over ] || vtk_ver=$vtk_ver_over
+        echo "F3D_VTK_VERSION=$vtk_ver" >> $GITHUB_ENV
 
     - name: Build dependency
       uses: docker/build-push-action@v7
@@ -130,17 +151,19 @@ jobs:
         target: ${{ matrix.target }}
         context: "{{defaultContext}}:webassembly"
         cache-from: |
-          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-base-${{ matrix.arch }}
-        cache-to: type=local,dest=${{ runner.temp }}/wasm-cache,mode=max
+          type=local,src=${{ runner.temp }}/wasm-cache-base
+        cache-to: type=local,dest=${{ runner.temp }}/wasm-cache-out,mode=max
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
+          VTK_VERSION=${{ env.F3D_VTK_VERSION }}
 
     - name: Upload build cache
       uses: actions/upload-artifact@v7
       with:
         name: wasm-cache-${{ matrix.target }}-${{ matrix.arch }}
-        path: ${{ runner.temp }}/wasm-cache
+        path: ${{ runner.temp }}/wasm-cache-out
         compression-level: 0
+        retention-days: 1
         overwrite: true
 
   build_f3d-wasm-final:

@@ -70,10 +70,41 @@ jobs:
         tags: ghcr.io/f3d-app/f3d-ci:latest
         context: "{{defaultContext}}:ci"
 
-  build_f3d-wasm-targets:
-    name: Build WebAssembly (${{ matrix.target }} - ${{ matrix.arch }})
+  build_f3d-wasm-base:
+    name: Build WebAssembly (base)
     needs: changes
     if: ${{ always() && (github.event_name != 'pull_request' || needs.changes.outputs.wasm == 'true') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [amd64, arm64]
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    steps:
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v4
+
+    - name: Build dependency
+      uses: docker/build-push-action@v7
+      with:
+        push: false
+        platforms: linux/${{ matrix.arch }}
+        target: base
+        context: "{{defaultContext}}:webassembly"
+        cache-to: type=local,dest=${{ runner.temp }}/wasm-cache,mode=max
+
+    - name: Upload build cache
+      uses: actions/upload-artifact@v7
+      with:
+        name: wasm-cache-base-${{ matrix.arch }}
+        path: ${{ runner.temp }}/wasm-cache
+        compression-level: 0
+        overwrite: true
+
+  build_f3d-wasm-targets:
+    name: Build WebAssembly (${{ matrix.target }} - ${{ matrix.arch }})
+    needs: build_f3d-wasm-base
+    if: ${{ always() && needs.build_f3d-wasm-base.result == 'success' }}
     strategy:
       fail-fast: false
       matrix:
@@ -82,28 +113,14 @@ jobs:
     runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     steps:
 
+    - name: Download build caches
+      uses: actions/download-artifact@v8
+      with:
+        pattern: wasm-cache-*
+        path: ${{ runner.temp }}/wasm-cache
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v4
-
-    - name: Recover versions.json to parse
-      working-directory: ${{github.workspace}}
-      shell: bash
-      run: curl -s ${{ github.event.inputs.versions_file_url || 'https://raw.githubusercontent.com/f3d-app/f3d/master/.github/workflows/versions.json' }} > ./versions.json
-
-    - name: Recover VTK version
-      id: vtk_ver
-      uses: f3d-app/extract-version-action@main
-      with:
-        file: ./versions.json
-        special_name: vtk_commit_sha
-
-    - name: Check VTK version override
-      shell: bash
-      run: |
-        vtk_ver=${{ steps.vtk_ver.outputs.extract }}
-        vtk_ver_over=${{ github.event.inputs.vtk_version_override }}
-        [ -z $vtk_ver_over ] || vtk_ver=$vtk_ver_over
-        echo "F3D_VTK_VERSION=$vtk_ver" >> $GITHUB_ENV
 
     - name: Build dependency
       uses: docker/build-push-action@v7
@@ -112,10 +129,11 @@ jobs:
         platforms: linux/${{ matrix.arch }}
         target: ${{ matrix.target }}
         context: "{{defaultContext}}:webassembly"
+        cache-from: |
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-base-${{ matrix.arch }}
         cache-to: type=local,dest=${{ runner.temp }}/wasm-cache,mode=max
         build-args: |
           CMAKE_BUILD_PARALLEL_LEVEL=4
-          VTK_VERSION=${{ env.F3D_VTK_VERSION }}
 
     - name: Upload build cache
       uses: actions/upload-artifact@v7
@@ -125,8 +143,8 @@ jobs:
         compression-level: 0
         overwrite: true
 
-  build_f3d-wasm:
-    name: Build WebAssembly
+  build_f3d-wasm-final:
+    name: Build WebAssembly (final)
     needs: build_f3d-wasm-targets
     if: ${{ always() && needs.build_f3d-wasm-targets.result == 'success' }}
     runs-on: ubuntu-latest
@@ -193,6 +211,8 @@ jobs:
         tags: ghcr.io/f3d-app/f3d-wasm:${{ env.F3D_DOCKER_TIMESTAMP }}, ghcr.io/f3d-app/f3d-wasm:${{ env.F3D_DOCKER_TAG }}
         context: "{{defaultContext}}:webassembly"
         cache-from: |
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-base-amd64
+          type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-base-arm64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-alembic-amd64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-alembic-arm64
           type=local,src=${{ runner.temp }}/wasm-cache/wasm-cache-assimp-amd64

@@ -36,7 +36,8 @@ RUN apt update && apt install -y \
       curl \
       file \
       flex \
-      gzip
+      gzip \
+      meson
 
 # Install CI tools
 RUN apt update && apt install -y \

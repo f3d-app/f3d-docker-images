@@ -471,6 +471,7 @@ ENV CMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake
 COPY --from=alembic /depends /depends
 COPY --from=assimp /depends /depends
 COPY --from=draco /depends /depends
+COPY --from=meshopt /depends /depends
 COPY --from=occt /depends /depends
 COPY --from=openexr /depends /depends
 COPY --from=openusd /depends /depends

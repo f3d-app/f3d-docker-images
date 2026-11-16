@@ -37,7 +37,8 @@ RUN apt update && apt install -y \
       file \
       flex \
       gzip \
-      meson
+      meson \
+      python3-mako
 
 # Install CI tools
 RUN apt update && apt install -y \

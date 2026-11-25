@@ -228,40 +228,11 @@ RUN cmake -S /tbb-src -B /tbb-build \
 RUN cmake --build /tbb-build --target install && rm -rf /tbb-src /tbb-build
 
 ######################################
-# Blosc
-######################################
-FROM base AS blosc
-
-COPY --from=lz4 /depends /depends
-COPY --from=zlib /depends /depends
-
-ARG CMAKE_BUILD_PARALLEL_LEVEL=8
-ARG BLOSC_VERSION
-RUN BLOSC_VERSION=${BLOSC_VERSION:-$(jq -r '.blosc.version' /versions.json)} \
-  && wget -q https://github.com/Blosc/c-blosc/archive/refs/tags/$BLOSC_VERSION.tar.gz -O /blosc-src.tar.gz
-
-RUN mkdir -p /blosc-src && tar -xzf /blosc-src.tar.gz -C /blosc-src --strip-components 1 && rm -rf /blosc-src.tar.gz
-
-RUN cmake -S /blosc-src -B /blosc-build \
-  -DBUILD_SHARED_LIBS=OFF \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
-  -DBUILD_BENCHMARKS=OFF \
-  -DBUILD_FUZZERS=OFF \
-  -DBUILD_SHARED=OFF \
-  -DBUILD_STATIC=ON \
-  -DBUILD_TESTS=OFF \
-  -DPREFER_EXTERNAL_LZ4=ON \
-  -DPREFER_EXTERNAL_ZLIB=ON
-
-RUN cmake --build /blosc-build --target install && rm -rf /blosc-src /blosc-build
-
-######################################
 # OpenVDB
 ######################################
 FROM base AS openvdb
 
-COPY --from=blosc /depends /depends
+COPY --from=zlib /depends /depends
 COPY --from=tbb /depends /depends
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
@@ -270,15 +241,6 @@ RUN OPENVDB_VERSION=${OPENVDB_VERSION:-$(jq -r '.openvdb.version' /versions.json
   && wget -q https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/$OPENVDB_VERSION.tar.gz -O /openvdb-src.tar.gz
 
 RUN mkdir -p /openvdb-src && tar -xzf /openvdb-src.tar.gz -C /openvdb-src --strip-components 1 && rm -rf /openvdb-src.tar.gz
-
-RUN rm /openvdb-src/cmake/FindTBB.cmake
-
-# Remove not needed CMake modules from OpenVDB
-COPY openvdb-remove-not-needed-cmake-modules.patch /
-RUN patch -p1 -d /openvdb-src < /openvdb-remove-not-needed-cmake-modules.patch
-
-COPY openvdb-fix-visible-dependencies-link.patch /
-RUN patch -p1 -d /openvdb-src < /openvdb-fix-visible-dependencies-link.patch
 
 RUN ls /depends/lib/cmake && cmake -S /openvdb-src -B /openvdb-build \
   -DBUILD_SHARED_LIBS=OFF \
@@ -291,10 +253,10 @@ RUN ls /depends/lib/cmake && cmake -S /openvdb-src -B /openvdb-build \
   -DOPENVDB_CORE_SHARED=OFF \
   -DOPENVDB_CORE_STATIC=ON \
   -DOPENVDB_USE_DELAYED_LOADING=OFF \
-  -DUSE_BLOSC:BOOL=ON \
   -DUSE_CCACHE:BOOL=OFF \
   -DUSE_EXPLICIT_INSTANTIATION:BOOL=OFF \
-  -DUSE_ZLIB:BOOL=ON
+  -DUSE_ZLIB:BOOL=ON \
+  -DUSE_ZSTD:BOOL=OFF
 
 RUN cmake --build /openvdb-build --target install && rm -rf /openvdb-src /openvdb-build
 
@@ -466,6 +428,7 @@ RUN cmake --build /webifc-build --target install && rm -rf /webifc-src /webifc-b
 ######################################
 FROM base AS vtk
 
+COPY --from=lz4 /depends /depends
 COPY --from=openvdb /depends /depends
 
 ARG CMAKE_BUILD_PARALLEL_LEVEL=8
@@ -479,7 +442,6 @@ RUN cmake -S /vtk-src -B /vtk-build \
   -DBUILD_SHARED_LIBS=OFF \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX:PATH=/depends \
-  -DCMAKE_MODULE_PATH=/depends/lib/cmake/OpenVDB/ \
   -DCMAKE_FIND_ROOT_PATH:PATH=/depends \
   -DVTK_BUILD_TESTING=OFF \
   -DVTK_ENABLE_LOGGING=OFF \

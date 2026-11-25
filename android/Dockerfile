@@ -266,32 +266,6 @@ RUN cmake -S /tbb-src -B /tbb-build \
 RUN cmake --build /tbb-build --target install && rm -rf /tbb-src /tbb-build
 
 ######################################
-# blosc
-######################################
-FROM base AS blosc
-
-ARG BLOSC_VERSION
-RUN BLOSC_VERSION=${BLOSC_VERSION:-$(jq -r '.blosc.version' /versions.json)} \
-  && wget -q https://github.com/Blosc/c-blosc/archive/refs/tags/$BLOSC_VERSION.tar.gz -O /blosc-src.tar.gz
-
-RUN mkdir -p /blosc-src && tar -xzf /blosc-src.tar.gz -C /blosc-src --strip-components 1 && rm -rf /blosc-src.tar.gz
-
-RUN cmake -S /blosc-src -B /blosc-build \
-  -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX:PATH=/depends \
-  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
-  -DBUILD_BENCHMARKS=OFF \
-  -DBUILD_FUZZERS=OFF \
-  -DBUILD_SHARED=OFF \
-  -DBUILD_STATIC=ON \
-  -DBUILD_TESTS=OFF \
-  -DPREFER_EXTERNAL_ZLIB=ON \
-  -DDEACTIVATE_LZ4=ON
-
-RUN cmake --build /blosc-build --target install && rm -rf /blosc-src /blosc-build
-
-######################################
 # OpenVDB
 ######################################
 FROM base AS openvdb
@@ -300,19 +274,10 @@ ARG OPENVDB_VERSION
 RUN OPENVDB_VERSION=${OPENVDB_VERSION:-$(jq -r '.openvdb.version' /versions.json)} \
   && wget -q https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/$OPENVDB_VERSION.tar.gz -O /openvdb-src.tar.gz
 
+
 RUN mkdir -p /openvdb-src && tar -xzf /openvdb-src.tar.gz -C /openvdb-src --strip-components 1 && rm -rf /openvdb-src.tar.gz
 
-# https://github.com/AcademySoftwareFoundation/openvdb/issues/1740
-# https://github.com/AcademySoftwareFoundation/openvdb/issues/1741
-COPY openvdb-remove-not-needed-cmake-modules.patch /
-RUN patch -p1 -d /openvdb-src < /openvdb-remove-not-needed-cmake-modules.patch
-
-# https://github.com/AcademySoftwareFoundation/openvdb/issues/1741
-COPY openvdb-fix-visible-dependencies-link.patch /
-RUN patch -p1 -d /openvdb-src < /openvdb-fix-visible-dependencies-link.patch
-
 COPY --from=tbb /depends /depends
-COPY --from=blosc /depends /depends
 
 RUN cmake -S /openvdb-src -B /openvdb-build \
   -DCMAKE_TOOLCHAIN_FILE=/android-toolchain.cmake \
@@ -326,10 +291,10 @@ RUN cmake -S /openvdb-src -B /openvdb-build \
   -DOPENVDB_CORE_SHARED=OFF \
   -DOPENVDB_CORE_STATIC=ON \
   -DOPENVDB_USE_DELAYED_LOADING=OFF \
-  -DUSE_BLOSC=ON \
   -DUSE_CCACHE=OFF \
   -DUSE_EXPLICIT_INSTANTIATION=OFF \
-  -DUSE_ZLIB=ON
+  -DUSE_ZLIB=ON \
+  -DUSE_ZSTD=OFF
 
 RUN cmake --build /openvdb-build --target install && rm -rf /openvdb-src /openvdb-build
 
@@ -443,17 +408,13 @@ RUN mkdir -p /vtk-src && tar -xzf /vtk-src.tar.gz -C /vtk-src --strip-components
 
 COPY --from=openvdb /depends /depends
 
-# OPENVDB_USE_STATIC_LIBS is needed because FindOpenVDB.cmake is not smart enough to find it out itself
-# CMAKE_MODULE_PATH is needed because of https://github.com/AcademySoftwareFoundation/openvdb/issues/1160
-ENV OPENVDB_ADDITIONAL_OPTIONS="-DCMAKE_MODULE_PATH=/depends/lib/cmake/OpenVDB;-DOPENVDB_USE_STATIC_LIBS=ON"
-
 RUN cmake -S /vtk-src -B /vtk-build \
       -DANDROID_ARCH_ABI=$ANDROID_ARCH \
       -DANDROID_NATIVE_API_LEVEL=$ANDROID_API \
       -DANDROID_NDK=/ndk \
       -DCMAKE_BUILD_TYPE=Release \
       -DVTK_ANDROID_BUILD=ON \
-      -DVTK_ANDROID_USER_OPTIONS="-DCMAKE_FIND_ROOT_PATH:PATH=/depends;${OPENVDB_ADDITIONAL_OPTIONS};-DHAVE_MREMAP=0;-DVTK_MODULE_ENABLE_VTK_IOInfovis=NO;-DVTK_MODULE_ENABLE_VTK_IOOpenVDB=YES;-DVTK_MODULE_ENABLE_VTK_IOHDF=YES;-DVTK_MODULE_ENABLE_VTK_IOExodus=YES;-DVTK_MODULE_ENABLE_VTK_IONetCDF=YES;-DVTK_MODULE_ENABLE_VTK_RenderingLabel=YES;-DVTK_MODULE_ENABLE_VTK_TestingRendering=NO;-DVTK_MODULE_ENABLE_VTK_RenderingGridAxes=YES"
+      -DVTK_ANDROID_USER_OPTIONS="-DCMAKE_FIND_ROOT_PATH:PATH=/depends;-DHAVE_MREMAP=0;-DVTK_MODULE_ENABLE_VTK_IOInfovis=NO;-DVTK_MODULE_ENABLE_VTK_IOOpenVDB=YES;-DVTK_MODULE_ENABLE_VTK_IOHDF=YES;-DVTK_MODULE_ENABLE_VTK_IOExodus=YES;-DVTK_MODULE_ENABLE_VTK_IONetCDF=YES;-DVTK_MODULE_ENABLE_VTK_RenderingLabel=YES;-DVTK_MODULE_ENABLE_VTK_TestingRendering=NO;-DVTK_MODULE_ENABLE_VTK_RenderingGridAxes=YES"
 
 RUN cmake --build /vtk-build && rm -rf /vtk-src
 
